@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Simple base styles */
+:root { color-scheme: light dark; }
+body { min-height: 100vh; }
+
