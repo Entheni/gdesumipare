@@ -5,6 +5,7 @@ const Login = () => import('../pages/Login.vue');
 const Register = () => import('../pages/Register.vue');
 const Dashboard = () => import('../pages/Dashboard.vue');
 const AddBill = () => import('../pages/AddBill.vue');
+const Settings = () => import('../pages/Settings.vue');
 
 const routes = [
   { path: '/', redirect: '/dashboard' },
@@ -12,6 +13,8 @@ const routes = [
   { path: '/register', component: Register, meta: { public: true } },
   { path: '/dashboard', component: Dashboard, meta: { requiresAuth: true } },
   { path: '/add-bill', component: AddBill, meta: { requiresAuth: true } },
+  { path: '/bills/:id/edit', component: AddBill, meta: { requiresAuth: true } },
+  { path: '/settings', component: Settings, meta: { requiresAuth: true } },
 ];
 
 const router = createRouter({

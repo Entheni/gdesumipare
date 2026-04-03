@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "gdesumipare-backend",
   "version": "0.1.0",
   "private": true,
@@ -9,19 +9,21 @@
     "migrate": "knex --knexfile knexfile.cjs migrate:latest",
     "migrate:rollback": "knex --knexfile knexfile.cjs migrate:rollback",
     "seed": "knex --knexfile knexfile.cjs seed:run",
+    "reminders": "node src/jobs/sendReminders.js",
     "test": "node --test src/**/*.test.js"
   },
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
     "knex": "^3.1.0",
-    "pg": "^8.11.5",
-    "bcrypt": "^5.1.1"
+    "nodemailer": "^8.0.4",
+    "pg": "^8.11.5"
   },
   "devDependencies": {
-    "nodemon": "^3.1.0",
-    "knex": "^3.1.0"
+    "knex": "^3.1.0",
+    "nodemon": "^3.1.0"
   }
 }

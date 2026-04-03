@@ -145,6 +145,14 @@ export function validateBillPayload(payload = {}, { partial = false } = {}) {
     bill.notes = normalizeOptionalText(payload.notes, 1000);
   }
 
+  if (bill.recurrence === 'monthly' && !bill.due_day && !bill.next_due_date) {
+    throw new ValidationError('monthly bills require due_day or next_due_date');
+  }
+
+  if (bill.recurrence === 'yearly' && !bill.next_due_date) {
+    throw new ValidationError('yearly bills require next_due_date');
+  }
+
   if (partial && Object.keys(bill).length === 0) {
     throw new ValidationError('at least one updatable field is required');
   }

@@ -1,20 +1,40 @@
 import { Router } from 'express';
 import db from '../db/knex.js';
 import { requireAuth } from '../utils/auth.js';
+import { buildOverview, getMonthlyAmount } from '../utils/billing.js';
 
 const router = Router();
 
 router.get('/monthly', requireAuth, async (req, res) => {
   try {
-    const rows = await db('bills')
-      .select('category')
-      .sum({ total_rsd: 'amount_rsd' })
-      .where({ user_id: req.userId })
-      .groupBy('category')
-      .orderBy('category');
-    res.json({ categories: rows });
+    const bills = await db('bills').where({ user_id: req.userId });
+    const grouped = new Map();
+
+    for (const bill of bills) {
+      const key = bill.category || null;
+      const current = grouped.get(key) || 0;
+      grouped.set(key, current + getMonthlyAmount(bill.amount_rsd, bill.recurrence));
+    }
+
+    const categories = [...grouped.entries()]
+      .map(([category, total]) => ({
+        category,
+        total_rsd: Number(total.toFixed(2)),
+      }))
+      .sort((left, right) => (left.category || '').localeCompare(right.category || ''));
+
+    res.json({ categories });
   } catch {
     res.status(500).json({ error: 'failed to load monthly stats' });
+  }
+});
+
+router.get('/overview', requireAuth, async (req, res) => {
+  try {
+    const bills = await db('bills').where({ user_id: req.userId }).orderBy('created_at', 'desc');
+    res.json(buildOverview(bills));
+  } catch {
+    res.status(500).json({ error: 'failed to load overview stats' });
   }
 });
 

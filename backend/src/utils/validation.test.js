@@ -81,3 +81,15 @@ test('validateBillPayload rejects impossible dates', () => {
     /next_due_date must be a valid ISO date/
   );
 });
+
+test('validateBillPayload requires recurrence-specific due information', () => {
+  assert.throws(
+    () => validateBillPayload({ name: 'Infostan', amount_rsd: 3200, recurrence: 'monthly' }),
+    /monthly bills require due_day or next_due_date/
+  );
+
+  assert.throws(
+    () => validateBillPayload({ name: 'Hosting', amount_rsd: 12000, recurrence: 'yearly', due_day: 12 }),
+    /yearly bills require next_due_date/
+  );
+});
