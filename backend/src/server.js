@@ -4,6 +4,7 @@ import cors from 'cors';
 
 import authRoutes from './routes/auth.js';
 import billsRoutes from './routes/bills.js';
+import incomesRoutes from './routes/incomes.js';
 import remindersRoutes from './routes/reminders.js';
 import settingsRoutes from './routes/settings.js';
 import statsRoutes from './routes/stats.js';
@@ -28,6 +29,7 @@ app.get('/api/zdravlje', (_req, res) => {
 // API routes
 app.use('/api/autentikacija', authRoutes);
 app.use('/api/obaveze', billsRoutes);
+app.use('/api/prihodi', incomesRoutes);
 app.use('/api/podsetnici', remindersRoutes);
 app.use('/api/podesavanja', settingsRoutes);
 app.use('/api/statistika', statsRoutes);
@@ -35,6 +37,7 @@ app.use('/api/statistika', statsRoutes);
 // Legacy aliases
 app.use('/api/auth', authRoutes);
 app.use('/api/bills', billsRoutes);
+app.use('/api/incomes', incomesRoutes);
 app.use('/api/reminders', remindersRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/stats', statsRoutes);

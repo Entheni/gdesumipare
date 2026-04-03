@@ -50,11 +50,62 @@
 
       <div class="flex flex-wrap gap-3">
         <button :disabled="loading" class="btn-primary">{{ loading ? 'Čuvanje...' : isEditing ? 'Sačuvaj izmene' : 'Sačuvaj' }}</button>
-        <router-link to="/pregled" class="btn-secondary">Otkaži</router-link>
+        <router-link to="/obaveze" class="btn-secondary">Otkaži</router-link>
       </div>
 
       <p v-if="error" class="text-red-600 text-sm">{{ error }}</p>
     </form>
+
+    <section v-if="isEditing" class="surface-card p-6 space-y-5">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 class="text-xl font-semibold">Istorija uplata</h2>
+          <p class="muted text-sm mt-1">Pregled svih evidentiranih uplata za ovu obavezu.</p>
+        </div>
+      </div>
+
+      <form @submit.prevent="submitPayment" class="grid gap-4 md:grid-cols-[1fr_1fr_1fr_auto] md:items-end">
+        <div>
+          <label class="block text-sm font-medium mb-2">Iznos uplate</label>
+          <input v-model.number="paymentForm.amount_rsd" type="number" min="0.01" step="0.01" class="field" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-2">Datum dospeća koji plaćaš</label>
+          <input v-model="paymentForm.due_date" type="date" class="field" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-2">Napomena</label>
+          <input v-model="paymentForm.note" class="field" />
+        </div>
+        <div>
+          <button :disabled="paymentLoading" class="btn-primary w-full">
+            {{ paymentLoading ? 'Čuvanje...' : 'Dodaj uplatu' }}
+          </button>
+        </div>
+      </form>
+
+      <p v-if="paymentError" class="text-red-600 text-sm">{{ paymentError }}</p>
+
+      <div v-if="paymentsLoading" class="muted">Učitavanje uplata...</div>
+      <ul v-else-if="payments.length" class="space-y-3">
+        <li
+          v-for="payment in payments"
+          :key="payment.id"
+          class="rounded-2xl border p-4"
+          style="border-color: var(--border)"
+        >
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <div class="font-medium">{{ formatCurrency(payment.amount_rsd) }}</div>
+              <div class="muted text-sm mt-1">plaćeno za dospeće {{ formatDate(payment.due_date) }}</div>
+              <div v-if="payment.note" class="muted text-sm mt-1">{{ payment.note }}</div>
+            </div>
+            <div class="text-sm muted">{{ formatDateTime(payment.paid_at) }}</div>
+          </div>
+        </li>
+      </ul>
+      <div v-else class="muted">Još nema evidentiranih uplata.</div>
+    </section>
   </div>
 </template>
 
@@ -68,6 +119,10 @@ const router = useRouter();
 const isEditing = computed(() => Boolean(route.params.id));
 const loading = ref(false);
 const error = ref('');
+const payments = ref([]);
+const paymentsLoading = ref(false);
+const paymentLoading = ref(false);
+const paymentError = ref('');
 
 const form = reactive({
   name: '',
@@ -79,6 +134,12 @@ const form = reactive({
   notes: '',
 });
 
+const paymentForm = reactive({
+  amount_rsd: 0,
+  due_date: '',
+  note: '',
+});
+
 function assignBill(bill) {
   form.name = bill.name || '';
   form.category = bill.category || '';
@@ -87,6 +148,49 @@ function assignBill(bill) {
   form.due_day = bill.due_day || '';
   form.next_due_date = bill.next_due_date || '';
   form.notes = bill.notes || '';
+  paymentForm.amount_rsd = Number(bill.amount_rsd || 0);
+  paymentForm.due_date = bill.next_due_date || '';
+}
+
+function formatCurrency(value) {
+  return `${Number(value || 0).toFixed(2)} RSD`;
+}
+
+function formatDate(value) {
+  if (!value) return 'Nije definisano';
+  return new Intl.DateTimeFormat('sr-RS', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(new Date(`${value}T00:00:00`));
+}
+
+function formatDateTime(value) {
+  if (!value) return 'Nije definisano';
+  return new Intl.DateTimeFormat('sr-RS', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(value));
+}
+
+async function loadPayments() {
+  if (!isEditing.value) {
+    return;
+  }
+
+  paymentsLoading.value = true;
+  paymentError.value = '';
+  try {
+    const { data } = await api.get(`/api/obaveze/${route.params.id}/uplate`);
+    payments.value = data.payments || [];
+  } catch (e) {
+    paymentError.value = e?.response?.data?.error || 'Neuspešno učitavanje uplata';
+  } finally {
+    paymentsLoading.value = false;
+  }
 }
 
 async function loadBill() {
@@ -126,7 +230,7 @@ async function submit() {
       await api.post('/api/obaveze', payload);
     }
 
-    router.push('/pregled');
+    router.push('/obaveze');
   } catch (e) {
     error.value = e?.response?.data?.error || 'Greška pri čuvanju';
   } finally {
@@ -134,5 +238,27 @@ async function submit() {
   }
 }
 
-onMounted(loadBill);
+async function submitPayment() {
+  paymentLoading.value = true;
+  paymentError.value = '';
+  try {
+    const { data } = await api.post(`/api/obaveze/${route.params.id}/uplate`, {
+      amount_rsd: paymentForm.amount_rsd,
+      due_date: paymentForm.due_date || null,
+      note: paymentForm.note || null,
+    });
+    assignBill(data.bill);
+    paymentForm.note = '';
+    await loadPayments();
+  } catch (e) {
+    paymentError.value = e?.response?.data?.error || 'Neuspešno čuvanje uplate';
+  } finally {
+    paymentLoading.value = false;
+  }
+}
+
+onMounted(async () => {
+  await loadBill();
+  await loadPayments();
+});
 </script>

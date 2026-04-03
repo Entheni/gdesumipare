@@ -3,7 +3,10 @@ import { authToken, isTokenValid } from '../auth/session.js';
 
 const Login = () => import('../pages/Login.vue');
 const Register = () => import('../pages/Register.vue');
-const Dashboard = () => import('../pages/Dashboard.vue');
+const Overview = () => import('../pages/Overview.vue');
+const Snapshot = () => import('../pages/Snapshot.vue');
+const Bills = () => import('../pages/Bills.vue');
+const Incomes = () => import('../pages/Incomes.vue');
 const AddBill = () => import('../pages/AddBill.vue');
 const Settings = () => import('../pages/Settings.vue');
 
@@ -11,13 +14,19 @@ const routes = [
   { path: '/', redirect: '/pregled' },
   { path: '/prijava', component: Login, meta: { public: true } },
   { path: '/registracija', component: Register, meta: { public: true } },
-  { path: '/pregled', component: Dashboard, meta: { requiresAuth: true } },
+  { path: '/pregled', component: Overview, meta: { requiresAuth: true } },
+  { path: '/snapshot', component: Snapshot, meta: { requiresAuth: true } },
+  { path: '/obaveze', component: Bills, meta: { requiresAuth: true } },
+  { path: '/prihodi', component: Incomes, meta: { requiresAuth: true } },
   { path: '/obaveze/dodaj', component: AddBill, meta: { requiresAuth: true } },
   { path: '/obaveze/:id/izmeni', component: AddBill, meta: { requiresAuth: true } },
   { path: '/podesavanja', component: Settings, meta: { requiresAuth: true } },
   { path: '/login', redirect: '/prijava' },
   { path: '/register', redirect: '/registracija' },
   { path: '/dashboard', redirect: '/pregled' },
+  { path: '/snapshot-view', redirect: '/snapshot' },
+  { path: '/bills', redirect: '/obaveze' },
+  { path: '/incomes', redirect: '/prihodi' },
   { path: '/add-bill', redirect: '/obaveze/dodaj' },
   { path: '/bills/:id/edit', redirect: (to) => `/obaveze/${to.params.id}/izmeni` },
   { path: '/settings', redirect: '/podesavanja' },

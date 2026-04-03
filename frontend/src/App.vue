@@ -4,12 +4,17 @@
       <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-4">
           <router-link to="/pregled" class="text-lg font-semibold tracking-tight">GdeSuMiPare</router-link>
-          <router-link to="/pregled" class="nav-link">Pregled</router-link>
-          <router-link to="/obaveze/dodaj" class="nav-link">Nova obaveza</router-link>
-          <router-link v-if="isAuthed" to="/podesavanja" class="nav-link">Podešavanja</router-link>
+          <template v-if="isAuthed">
+            <router-link to="/pregled" class="nav-link">Pregled</router-link>
+            <router-link to="/snapshot" class="nav-link">Snapshot</router-link>
+            <router-link to="/obaveze" class="nav-link">Obaveze</router-link>
+            <router-link to="/prihodi" class="nav-link">Prihodi</router-link>
+            <router-link to="/podesavanja" class="nav-link">Podešavanja</router-link>
+          </template>
         </div>
         <div class="flex items-center gap-3">
           <span class="text-sm muted">{{ themeLabel }}</span>
+          <router-link v-if="isAuthed" to="/obaveze/dodaj" class="btn-primary">+ Nova obaveza</router-link>
           <router-link v-if="!isAuthed" to="/prijava" class="nav-link">Prijava</router-link>
           <router-link v-if="!isAuthed" to="/registracija" class="nav-link">Registracija</router-link>
           <button v-else @click="logout" class="btn-danger">Odjava</button>

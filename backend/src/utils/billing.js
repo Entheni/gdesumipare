@@ -35,16 +35,16 @@ function getBillDayOfMonth(bill) {
 }
 
 export function getNextDueDate(bill, referenceDate = new Date()) {
-  const today = startOfToday(referenceDate);
   const parsedNextDueDate = parseDateOnly(bill.next_due_date);
 
+  if (parsedNextDueDate) {
+    return formatDateOnly(parsedNextDueDate);
+  }
+
+  const today = startOfToday(referenceDate);
+
   if (bill.recurrence === 'yearly') {
-    if (!parsedNextDueDate) return null;
-    let candidate = createSafeDate(today.getUTCFullYear(), parsedNextDueDate.getUTCMonth(), parsedNextDueDate.getUTCDate());
-    if (candidate < today) {
-      candidate = createSafeDate(today.getUTCFullYear() + 1, parsedNextDueDate.getUTCMonth(), parsedNextDueDate.getUTCDate());
-    }
-    return formatDateOnly(candidate);
+    return null;
   }
 
   if (bill.recurrence === 'monthly') {
@@ -63,6 +63,26 @@ export function getNextDueDate(bill, referenceDate = new Date()) {
   return bill.next_due_date || null;
 }
 
+export function getFollowingDueDate(bill, fromDateValue) {
+  const fromDate = parseDateOnly(fromDateValue);
+  if (!fromDate) return null;
+
+  if (bill.recurrence === 'yearly') {
+    return formatDateOnly(
+      createSafeDate(fromDate.getUTCFullYear() + 1, fromDate.getUTCMonth(), fromDate.getUTCDate())
+    );
+  }
+
+  if (bill.recurrence === 'monthly') {
+    const dueDay = bill.due_day ? Number(bill.due_day) : fromDate.getUTCDate();
+    const nextMonth = fromDate.getUTCMonth() === 11 ? 0 : fromDate.getUTCMonth() + 1;
+    const nextYear = fromDate.getUTCMonth() === 11 ? fromDate.getUTCFullYear() + 1 : fromDate.getUTCFullYear();
+    return formatDateOnly(createSafeDate(nextYear, nextMonth, dueDay));
+  }
+
+  return null;
+}
+
 export function getDaysUntilDue(dateValue, referenceDate = new Date()) {
   const date = parseDateOnly(dateValue);
   if (!date) return null;
@@ -78,11 +98,27 @@ export function getMonthlyAmount(amountRsd, recurrence) {
 export function serializeBill(bill, referenceDate = new Date()) {
   const computedNextDueDate = getNextDueDate(bill, referenceDate);
   const storedDaysUntilDue = getDaysUntilDue(bill.next_due_date, referenceDate);
+  const normalizedNextDueDate = bill.next_due_date ? formatDateOnly(parseDateOnly(bill.next_due_date)) : null;
+  const latestPaymentDueDate = bill.latest_payment_due_date ? formatDateOnly(parseDateOnly(bill.latest_payment_due_date)) : null;
+  const latestPaymentPaidAt = bill.latest_payment_paid_at
+    ? new Date(bill.latest_payment_paid_at).toISOString()
+    : null;
+  const isPaid = !(
+    computedNextDueDate == null ||
+    latestPaymentDueDate == null ||
+    latestPaymentDueDate >= computedNextDueDate
+  );
+
   return {
     ...bill,
+    next_due_date: normalizedNextDueDate,
     computed_next_due_date: computedNextDueDate,
     days_until_due: getDaysUntilDue(computedNextDueDate, referenceDate),
     is_overdue: storedDaysUntilDue != null && storedDaysUntilDue < 0,
+    is_paid: isPaid,
+    status_label: storedDaysUntilDue != null && storedDaysUntilDue < 0 ? 'Kasni' : isPaid ? 'Plaćeno' : 'Čeka uplatu',
+    latest_payment_due_date: latestPaymentDueDate,
+    latest_payment_paid_at: latestPaymentPaidAt,
     monthly_amount_rsd: Number(getMonthlyAmount(bill.amount_rsd, bill.recurrence).toFixed(2)),
   };
 }
