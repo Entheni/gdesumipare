@@ -24,9 +24,10 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { clearAuthToken } from './api/client.js';
+import { authToken } from './auth/session.js';
 
 const router = useRouter();
-const isAuthed = computed(() => !!localStorage.getItem('token'));
+const isAuthed = computed(() => !!authToken.value);
 function logout() {
   clearAuthToken();
   router.push('/login');

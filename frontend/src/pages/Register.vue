@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="max-w-sm mx-auto p-6">
     <h1 class="text-2xl font-semibold mb-4">Registracija</h1>
     <form @submit.prevent="submit" class="space-y-4">
@@ -34,9 +34,14 @@ async function submit() {
   loading.value = true;
   error.value = '';
   try {
-    await api.post('/api/auth/register', { email: email.value, password: password.value });
-    // Auto-login after register
-    const { data } = await api.post('/api/auth/login', { email: email.value, password: password.value });
+    await api.post('/api/auth/register', {
+      email: email.value,
+      password: password.value,
+    });
+    const { data } = await api.post('/api/auth/login', {
+      email: email.value,
+      password: password.value,
+    });
     setAuthToken(data.token);
     router.push('/dashboard');
   } catch (e) {
@@ -46,4 +51,3 @@ async function submit() {
   }
 }
 </script>
-

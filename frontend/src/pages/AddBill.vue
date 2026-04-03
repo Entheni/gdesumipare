@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="max-w-md mx-auto p-6">
     <h1 class="text-2xl font-semibold mb-4">Dodaj obavezu</h1>
     <form @submit.prevent="submit" class="space-y-4">
@@ -13,7 +13,7 @@
       <div class="grid grid-cols-2 gap-4">
         <div>
           <label class="block text-sm font-medium mb-1">Iznos (RSD)</label>
-          <input v-model.number="amount_rsd" type="number" min="0" step="0.01" required class="w-full border rounded p-2" />
+          <input v-model.number="amount_rsd" type="number" min="0.01" step="0.01" required class="w-full border rounded p-2" />
         </div>
         <div>
           <label class="block text-sm font-medium mb-1">Ponavljanje</label>
@@ -80,4 +80,3 @@ async function submit() {
   }
 }
 </script>
-

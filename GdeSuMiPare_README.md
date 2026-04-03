@@ -1,226 +1,154 @@
-# 💸 GdeSuMiPare
+﻿# GdeSuMiPare
 
-**GdeSuMiPare** is a Serbian-language web app that helps users track recurring bills, subscriptions, and overall monthly expenses — giving them clear insight into **where their money goes**.
+**GdeSuMiPare** je web aplikacija na srpskom jeziku za pracenje racuna, pretplata i mesecnih troskova, sa jasnim pregledom toga gde novac odlazi.
 
----
+## Vizija projekta
 
-## 🧭 Project Vision
+Korisnici u Srbiji svakog meseca placaju vise ponavljajucih obaveza kao sto su Infostan, EPS, A1, SBB, Yettel, Netflix i parking, bez jednog centralnog pregleda. Aplikacija treba da pruzi jednostavan i privatnosti orijentisan dashboard za upravljanje tim troskovima.
 
-People in Serbia often juggle multiple payments each month (Infostan, EPS, A1, SBB, Yettel, Netflix, parking, etc.) without a central overview.  
-**GdeSuMiPare** provides a simple, privacy-focused personal finance dashboard for managing all recurring costs in one place.
+Bankarske integracije nisu deo trenutnog plana. Korisnik unosi ili kasnije uvozi obaveze rucno.
 
-No banking integration or partnerships — users manually input or import bills.  
-Low maintenance, high usefulness, and potential for gradual expansion (CSV import, charts, mobile app).
+## MVP ciljevi - Faza 1
 
----
+Glavne funkcionalnosti:
+- Korisnicki nalozi sa email + password autentikacijom i JWT tokenima
+- Dodavanje racuna i pretplata sa nazivom, iznosom, ucestaloscu i datumom dospeca
+- Dashboard sa ukupnim mesecnim troskovima i pregledom narednih placanja
+- Email notifikacije nekoliko dana pre dospeca
+- Kategorije troskova
+- Dark / light mode
 
-## 🎯 MVP Goals (Phase 1)
+Van opsega za sada:
+- Bank API integracije
+- AI funkcionalnosti
+- Vise valuta
+- Mobilna aplikacija
 
-**Core Features:**
+## Tehnologije
 
-| Feature | Description |
-|----------|--------------|
-| User Accounts | Email + password authentication (JWT-based) |
-| Add Bill / Subscription | Name, amount, recurrence (monthly / yearly), due date |
-| Dashboard | Overview of total monthly costs + list of upcoming payments |
-| Notifications | Email reminders X days before due |
-| Categories | Tag bills (Utilities, Rent, Entertainment, etc.) |
-| Dark / Light Mode | Clean, minimal UI |
+- Backend: Node.js + Express
+- Baza: PostgreSQL preko Knex-a
+- Frontend: Vue 3 + Vite + TailwindCSS
+- Auth: JWT + bcrypt
+- Mail: Nodemailer
+- Hosting: Render + Vercel
 
-**Non-Goals (for now):**
-- Bank API integrations  
-- AI features  
-- Multi-currency support  
-- Mobile app (planned later)
+## Struktura projekta
 
----
-
-## ⚙️ Tech Stack
-
-| Layer | Choice | Notes |
-|--------|---------|--------|
-| **Backend** | Node.js + Express | REST API, lightweight |
-| **Database** | PostgreSQL (via Knex) | Familiar SQL migration system |
-| **Frontend** | Vue 3 + Vite + TailwindCSS | Fast, minimalistic UI |
-| **Auth** | JWT + bcrypt | Stateless auth |
-| **Mail** | Nodemailer (via Gmail or Resend) | Reminder emails |
-| **Charts** | Chart.js or Recharts | For expense trends |
-| **Hosting** | Render (API + DB) + Vercel (frontend) | Free tiers friendly |
-
----
-
-## 🧩 Project Structure
-
-```
+```text
 gdesumipare/
- ├─ backend/
- │   ├─ src/
- │   │   ├─ controllers/      # API logic
- │   │   ├─ models/           # DB models (Knex)
- │   │   ├─ routes/           # Express routes
- │   │   ├─ db/               # Migrations & seeds
- │   │   ├─ utils/            # Helpers (auth, mail)
- │   │   └─ server.js         # App entry
- │   ├─ package.json
- │   └─ knexfile.js
- │
- ├─ frontend/
- │   ├─ src/
- │   │   ├─ components/       # Reusable UI
- │   │   ├─ pages/            # Dashboard, Auth, etc.
- │   │   ├─ composables/      # Vue 3 composables
- │   │   ├─ App.vue
- │   │   └─ main.js
- │   ├─ public/
- │   └─ vite.config.js
- │
- ├─ docker-compose.yml
- ├─ .env.example
- └─ README.md
+|-- backend/
+|   |-- src/
+|   |   |-- routes/
+|   |   |-- db/
+|   |   |-- utils/
+|   |   `-- server.js
+|   |-- knexfile.cjs
+|   `-- package.json
+|-- frontend/
+|   |-- src/
+|   |   |-- api/
+|   |   |-- pages/
+|   |   |-- router/
+|   |   |-- App.vue
+|   |   `-- main.js
+|   |-- index.html
+|   `-- package.json
+`-- GdeSuMiPare_README.md
 ```
 
----
+## Pocetna baza podataka
 
-## 🗃️ Database Schema (Initial Draft)
+### users
+- `id` serial primary key
+- `email` varchar(255) unique not null
+- `password_hash` text not null
+- `created_at` timestamp default now()
 
-### Tables
+### bills
+- `id` serial primary key
+- `user_id` int foreign key -> users.id
+- `name` varchar(255) not null
+- `category` varchar(100)
+- `amount_rsd` numeric(10,2) not null
+- `recurrence` varchar(20) not null
+- `due_day` int
+- `next_due_date` date
+- `notes` text
+- `created_at` timestamp default now()
 
-#### `users`
-| column | type | notes |
-|--------|------|-------|
-| id | serial PK |  |
-| email | varchar(255) unique not null |  |
-| password_hash | text not null |  |
-| created_at | timestamp default now() |  |
+### notifications
+- `id` serial primary key
+- `user_id` int foreign key -> users.id
+- `bill_id` int foreign key -> bills.id
+- `sent_at` timestamp
 
-#### `bills`
-| column | type | notes |
-|--------|------|-------|
-| id | serial PK |  |
-| user_id | int FK → users.id |  |
-| name | varchar(255) | “EPS”, “Netflix” |
-| category | varchar(100) | “Utilities”, “Entertainment” |
-| amount_rsd | numeric(10,2) |  |
-| recurrence | varchar(20) | “monthly”, “yearly” |
-| due_day | int | 1–31 |
-| next_due_date | date | used for reminders |
-| notes | text | optional |
-| created_at | timestamp default now() |  |
+## API pregled
 
-#### `notifications`
-| column | type | notes |
-|--------|------|-------|
-| id | serial PK |  |
-| user_id | int FK → users.id |  |
-| bill_id | int FK → bills.id |  |
-| sent_at | timestamp | when reminder sent |
+- `POST /api/auth/register` - registracija korisnika
+- `POST /api/auth/login` - prijava i JWT token
+- `GET /api/bills` - svi racuni prijavljenog korisnika
+- `POST /api/bills` - dodavanje racuna
+- `PUT /api/bills/:id` - izmena racuna
+- `DELETE /api/bills/:id` - brisanje racuna
+- `GET /api/stats/monthly` - agregacija po kategoriji
 
----
+## Frontend stranice
 
-## 🔌 API Overview (MVP)
+- `/login` - prijava
+- `/register` - registracija
+- `/dashboard` - pregled troskova
+- `/add-bill` - unos nove obaveze
+- `/settings` - podesavanja i notifikacije, planirano
 
-| Method | Endpoint | Description |
-|--------|-----------|-------------|
-| POST | `/api/auth/register` | Register new user |
-| POST | `/api/auth/login` | Login → JWT |
-| GET | `/api/bills` | Get all bills for user |
-| POST | `/api/bills` | Add new bill |
-| PUT | `/api/bills/:id` | Edit bill |
-| DELETE | `/api/bills/:id` | Delete bill |
-| GET | `/api/stats/monthly` | Aggregated total by category |
+## Notifikacije
 
----
+Plan je da dnevni scheduler proverava racune koji dospevaju uskoro, salje email podsetnike i belezi poslate notifikacije u tabeli `notifications`.
 
-## 🎨 Frontend Pages
+## Roadmap
 
-| Route | Description |
-|--------|-------------|
-| `/login` | User login |
-| `/register` | Sign up |
-| `/dashboard` | Monthly overview |
-| `/add-bill` | Add new bill/subscription |
-| `/settings` | Notification preferences / profile |
+- Faza 1: Auth, bills CRUD, dashboard, email reminders
+- Faza 2: UX dorade, kategorije i grafikoni
+- Faza 3: CSV import
+- Faza 4: Mobilni klijent
 
----
+## Lokalno pokretanje
 
-## 📬 Notifications System
+Zahtevi:
+- Node.js 18+
+- PostgreSQL
 
-- Cron-like scheduler checks daily for bills due within N days.  
-- Sends reminder via **Nodemailer** using environment credentials.  
-- Logged into `notifications` table to avoid duplicates.  
+Instalacija:
 
----
-
-## 🧠 Roadmap
-
-| Phase | Duration | Goals |
-|--------|-----------|--------|
-| **Phase 1 – MVP** | 3–4 weeks | Auth, Bills CRUD, Dashboard, Email reminders |
-| **Phase 2 – UX & Charts** | 2 weeks | Expense visuals + categories |
-| **Phase 3 – Imports** | 3 weeks | CSV import from banks |
-| **Phase 4 – Mobile** | later | React Native / Capacitor client |
-
----
-
-## 🧰 Setup Guide
-
-### Requirements
-- Node v18+  
-- PostgreSQL  
-- (optional) Docker for local setup
-
-### Installation
 ```bash
-git clone https://github.com/<your-username>/gdesumipare.git
-cd gdesumipare
-
-# Backend
 cd backend
 npm install
-cp .env.example .env
 npm run migrate
 npm run dev
 
-# Frontend
 cd ../frontend
 npm install
 npm run dev
 ```
 
-### Environment Variables (example)
-```
+Primer environment promenljivih:
+
+```env
 PORT=5000
 DATABASE_URL=postgres://user:pass@localhost:5432/gdesumipare
-JWT_SECRET=supersecret
+JWT_SECRET=replace-with-a-long-random-secret
 EMAIL_SERVICE=gmail
-EMAIL_USER=youremail@gmail.com
+EMAIL_USER=you@example.com
 EMAIL_PASS=app_password
 ```
 
----
+## Bezbednost
 
-## 🔒 Security Notes
-- All user data stored locally (no external API).  
-- Passwords → bcrypt hashes.  
-- JWT tokens expire daily.  
-- HTTPS enforced in production.  
+- Lozinke se cuvaju kao bcrypt hash
+- JWT token istice nakon jednog dana
+- Produkcija treba da koristi HTTPS
+- Svi osetljivi podaci moraju doci iz environment promenljivih
 
----
+## License
 
-## 📈 Future Ideas
-- Smart insights (“You spent 12% more than last month”)  
-- Shared accounts / household mode  
-- Expense trends by category  
-- Serbian language localization (default)  
-
----
-
-## 👨‍💻 Maintainer
-**Author:** Buba (Ljubiša Mijailović)  
-Solo developer project built for Serbian market.  
-Frontend design & maintenance powered by GPT-5 Codex assistant.
-
----
-
-## 🪙 License
-MIT License – Free to use and extend.
+MIT

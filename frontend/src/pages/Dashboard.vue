@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="max-w-4xl mx-auto p-6 space-y-6">
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-semibold">Pregled</h1>
@@ -29,7 +29,7 @@
         <div v-else-if="statsError" class="text-red-600">{{ statsError }}</div>
         <ul v-else class="list-disc pl-5 text-sm">
           <li v-for="c in categories" :key="c.category">
-            {{ c.category || 'Ostalo' }} — {{ Number(c.total_rsd).toFixed(2) }} RSD
+            {{ c.category || 'Ostalo' }} - {{ Number(c.total_rsd).toFixed(2) }} RSD
           </li>
         </ul>
       </div>
@@ -80,4 +80,3 @@ onMounted(() => {
   fetchStats();
 });
 </script>
-

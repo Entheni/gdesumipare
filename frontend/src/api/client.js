@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { clearStoredToken, setStoredToken, authToken } from '../auth/session.js';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE || '',
@@ -6,19 +7,31 @@ const api = axios.create({
 
 export function setAuthToken(token) {
   if (token) {
-    localStorage.setItem('token', token);
+    setStoredToken(token);
     api.defaults.headers.common.Authorization = `Bearer ${token}`;
   }
 }
 
 export function clearAuthToken() {
-  localStorage.removeItem('token');
+  clearStoredToken();
   delete api.defaults.headers.common.Authorization;
 }
 
-// Initialize from storage on load
-const token = localStorage.getItem('token');
+const token = authToken.value;
 if (token) setAuthToken(token);
 
-export default api;
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error?.response?.status === 401 && authToken.value) {
+      clearAuthToken();
+      if (window.location.pathname !== '/login') {
+        window.location.assign('/login');
+      }
+    }
 
+    return Promise.reject(error);
+  }
+);
+
+export default api;

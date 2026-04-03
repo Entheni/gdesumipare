@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "gdesumipare-backend",
   "version": "0.1.0",
   "private": true,
@@ -8,7 +8,8 @@
     "start": "node src/server.js",
     "migrate": "knex --knexfile knexfile.cjs migrate:latest",
     "migrate:rollback": "knex --knexfile knexfile.cjs migrate:rollback",
-    "seed": "knex --knexfile knexfile.cjs seed:run"
+    "seed": "knex --knexfile knexfile.cjs seed:run",
+    "test": "node --test src/**/*.test.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

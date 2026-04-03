@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { authToken, isTokenValid } from '../auth/session.js';
 
 const Login = () => import('../pages/Login.vue');
 const Register = () => import('../pages/Register.vue');
@@ -19,15 +20,15 @@ const router = createRouter({
 });
 
 router.beforeEach((to) => {
-  const token = localStorage.getItem('token');
-  if (to.meta.requiresAuth && !token) {
+  const token = authToken.value;
+  const isAuthed = isTokenValid(token);
+  if (to.meta.requiresAuth && !isAuthed) {
     return { path: '/login' };
   }
-  if (to.meta.public && token && (to.path === '/login' || to.path === '/register')) {
+  if (to.meta.public && isAuthed && (to.path === '/login' || to.path === '/register')) {
     return { path: '/dashboard' };
   }
   return true;
 });
 
 export default router;
-

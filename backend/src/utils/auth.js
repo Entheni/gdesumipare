@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import { getJwtSecret } from '../config/env.js';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev';
+const JWT_SECRET = getJwtSecret();
 
 export function signToken(userId, options = {}) {
   return jwt.sign({ sub: userId }, JWT_SECRET, { expiresIn: '1d', ...options });
@@ -27,4 +28,3 @@ export async function hashPassword(password) {
 export async function verifyPassword(password, passwordHash) {
   return bcrypt.compare(password, passwordHash);
 }
-
