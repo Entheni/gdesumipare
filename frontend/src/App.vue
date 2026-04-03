@@ -3,15 +3,15 @@
     <nav class="app-nav border-b">
       <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-4">
-          <router-link to="/dashboard" class="text-lg font-semibold tracking-tight">GdeSuMiPare</router-link>
-          <router-link to="/dashboard" class="nav-link">Pregled</router-link>
-          <router-link to="/add-bill" class="nav-link">Nova obaveza</router-link>
-          <router-link v-if="isAuthed" to="/settings" class="nav-link">Podešavanja</router-link>
+          <router-link to="/pregled" class="text-lg font-semibold tracking-tight">GdeSuMiPare</router-link>
+          <router-link to="/pregled" class="nav-link">Pregled</router-link>
+          <router-link to="/obaveze/dodaj" class="nav-link">Nova obaveza</router-link>
+          <router-link v-if="isAuthed" to="/podesavanja" class="nav-link">Podešavanja</router-link>
         </div>
         <div class="flex items-center gap-3">
           <span class="text-sm muted">{{ themeLabel }}</span>
-          <router-link v-if="!isAuthed" to="/login" class="nav-link">Prijava</router-link>
-          <router-link v-if="!isAuthed" to="/register" class="nav-link">Registracija</router-link>
+          <router-link v-if="!isAuthed" to="/prijava" class="nav-link">Prijava</router-link>
+          <router-link v-if="!isAuthed" to="/registracija" class="nav-link">Registracija</router-link>
           <button v-else @click="logout" class="btn-danger">Odjava</button>
         </div>
       </div>
@@ -38,7 +38,7 @@ const themeLabel = computed(() => {
 
 function logout() {
   clearAuthToken();
-  router.push('/login');
+  router.push('/prijava');
 }
 
 async function syncThemeFromSettings() {
@@ -47,7 +47,7 @@ async function syncThemeFromSettings() {
   }
 
   try {
-    const { data } = await api.get('/api/settings');
+    const { data } = await api.get('/api/podesavanja');
     setThemePreference(data.settings.theme_preference);
   } catch {
     // Keep local theme preference when settings fetch fails.

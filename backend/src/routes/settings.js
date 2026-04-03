@@ -2,6 +2,7 @@ import { Router } from 'express';
 import db from '../db/knex.js';
 import { requireAuth } from '../utils/auth.js';
 import { ValidationError } from '../utils/validation.js';
+import { logError, sanitizeBody } from '../utils/logger.js';
 
 const router = Router();
 
@@ -10,14 +11,14 @@ function normalizeSettingsPayload(payload = {}, { partial = false } = {}) {
   const unknownFields = Object.keys(payload).filter((field) => !allowedFields.includes(field));
 
   if (unknownFields.length > 0) {
-    throw new ValidationError(`unknown fields: ${unknownFields.join(', ')}`);
+    throw new ValidationError(`Nepoznata polja: ${unknownFields.join(', ')}.`);
   }
 
   const settings = {};
 
   if (!partial || Object.hasOwn(payload, 'reminders_enabled')) {
     if (typeof payload.reminders_enabled !== 'boolean') {
-      throw new ValidationError('reminders_enabled must be a boolean');
+      throw new ValidationError('Polje reminders_enabled mora biti true ili false.');
     }
     settings.reminders_enabled = payload.reminders_enabled;
   }
@@ -25,20 +26,20 @@ function normalizeSettingsPayload(payload = {}, { partial = false } = {}) {
   if (!partial || Object.hasOwn(payload, 'reminder_days')) {
     const reminderDays = Number(payload.reminder_days);
     if (!Number.isInteger(reminderDays) || reminderDays < 0 || reminderDays > 30) {
-      throw new ValidationError('reminder_days must be an integer between 0 and 30');
+      throw new ValidationError('Broj dana za podsetnik mora biti ceo broj između 0 i 30.');
     }
     settings.reminder_days = reminderDays;
   }
 
   if (!partial || Object.hasOwn(payload, 'theme_preference')) {
     if (!['system', 'light', 'dark'].includes(payload.theme_preference)) {
-      throw new ValidationError('theme_preference must be one of: system, light, dark');
+      throw new ValidationError('Tema mora biti system, light ili dark.');
     }
     settings.theme_preference = payload.theme_preference;
   }
 
   if (partial && Object.keys(settings).length === 0) {
-    throw new ValidationError('at least one setting is required');
+    throw new ValidationError('Pošaljite bar jedno podešavanje za izmenu.');
   }
 
   return settings;
@@ -58,8 +59,9 @@ router.get('/', requireAuth, async (req, res) => {
         theme_preference: 'system',
       },
     });
-  } catch {
-    res.status(500).json({ error: 'failed to load settings' });
+  } catch (err) {
+    logError('Neuspešno učitavanje podešavanja.', err, { ruta: 'podesavanja', userId: req.userId });
+    res.status(500).json({ error: 'Neuspešno učitavanje podešavanja.' });
   }
 });
 
@@ -76,7 +78,8 @@ router.put('/', requireAuth, async (req, res) => {
     if (err instanceof ValidationError) {
       return res.status(400).json({ error: err.message });
     }
-    res.status(500).json({ error: 'failed to save settings' });
+    logError('Neuspešno čuvanje podešavanja.', err, { ruta: 'podesavanja', userId: req.userId, body: sanitizeBody(req.body) });
+    res.status(500).json({ error: 'Neuspešno čuvanje podešavanja.' });
   }
 });
 

@@ -7,6 +7,7 @@ import billsRoutes from './routes/bills.js';
 import remindersRoutes from './routes/reminders.js';
 import settingsRoutes from './routes/settings.js';
 import statsRoutes from './routes/stats.js';
+import { logInfo } from './utils/logger.js';
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -15,18 +16,32 @@ app.use(cors());
 app.use(express.json());
 
 // Healthcheck
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', service: 'gdesumipare-api' });
+app.use((req, _res, next) => {
+  logInfo('HTTP zahtev', { metod: req.method, putanja: req.path });
+  next();
+});
+
+app.get('/api/zdravlje', (_req, res) => {
+  res.json({ status: 'ok', servis: 'gdesumipare-api' });
 });
 
 // API routes
+app.use('/api/autentikacija', authRoutes);
+app.use('/api/obaveze', billsRoutes);
+app.use('/api/podsetnici', remindersRoutes);
+app.use('/api/podesavanja', settingsRoutes);
+app.use('/api/statistika', statsRoutes);
+
+// Legacy aliases
 app.use('/api/auth', authRoutes);
 app.use('/api/bills', billsRoutes);
 app.use('/api/reminders', remindersRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/stats', statsRoutes);
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok', servis: 'gdesumipare-api' });
+});
 
 app.listen(port, () => {
-  // eslint-disable-next-line no-console
-  console.log(`API listening on http://localhost:${port}`);
+  logInfo('API pokrenut.', { url: `http://localhost:${port}` });
 });

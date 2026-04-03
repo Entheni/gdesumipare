@@ -83,7 +83,7 @@ const runResult = ref('');
 async function loadSettings() {
   error.value = '';
   try {
-    const { data } = await api.get('/api/settings');
+    const { data } = await api.get('/api/podesavanja');
     Object.assign(form, data.settings);
     setThemePreference(data.settings.theme_preference);
   } catch (e) {
@@ -101,7 +101,7 @@ async function saveSettings() {
       reminder_days: form.reminder_days,
       theme_preference: form.theme_preference,
     };
-    const { data } = await api.put('/api/settings', payload);
+    const { data } = await api.put('/api/podesavanja', payload);
     Object.assign(form, data.settings);
     setThemePreference(data.settings.theme_preference);
     success.value = 'Podešavanja su sačuvana.';
@@ -117,7 +117,7 @@ async function runRemindersNow() {
   error.value = '';
   runResult.value = '';
   try {
-    const { data } = await api.post('/api/reminders/run');
+    const { data } = await api.post('/api/podsetnici/pokreni');
     runResult.value = data.sent_count
       ? `Poslato podsetnika: ${data.sent_count}.`
       : 'Nema podsetnika za slanje u ovom trenutku.';

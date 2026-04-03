@@ -18,7 +18,7 @@ test('validateCredentials normalizes email and accepts valid password', () => {
 test('validateCredentials rejects short passwords', () => {
   assert.throws(
     () => validateCredentials({ email: 'user@example.com', password: 'short' }),
-    /password must be at least 8 characters/
+    /Lozinka mora imati najmanje 8 karaktera\./
   );
 });
 
@@ -47,14 +47,14 @@ test('validateBillPayload sanitizes a valid create payload', () => {
 test('validateBillPayload rejects unknown fields on update', () => {
   assert.throws(
     () => validateBillPayload({ user_id: 123 }, { partial: true }),
-    /unknown fields: user_id/
+    /Nepoznata polja: user_id\./
   );
 });
 
 test('validateBillPayload rejects invalid recurrence and invalid due_day', () => {
   assert.throws(
     () => validateBillPayload({ name: 'EPS', amount_rsd: 1200, recurrence: 'weekly' }),
-    /recurrence must be one of: monthly, yearly/
+    /Ponavljanje mora biti "monthly" ili "yearly"\./
   );
 
   assert.throws(
@@ -65,7 +65,7 @@ test('validateBillPayload rejects invalid recurrence and invalid due_day', () =>
         recurrence: 'monthly',
         due_day: 35,
       }),
-    /due_day must be an integer between 1 and 31/
+    /Dan dospeća mora biti ceo broj između 1 i 31\./
   );
 });
 
@@ -78,18 +78,18 @@ test('validateBillPayload rejects impossible dates', () => {
         recurrence: 'monthly',
         next_due_date: '2026-02-31',
       }),
-    /next_due_date must be a valid ISO date/
+    /Datum dospeća mora biti ispravan datum\./
   );
 });
 
 test('validateBillPayload requires recurrence-specific due information', () => {
   assert.throws(
     () => validateBillPayload({ name: 'Infostan', amount_rsd: 3200, recurrence: 'monthly' }),
-    /monthly bills require due_day or next_due_date/
+    /Za mesečne obaveze unesite dan dospeća ili datum dospeća\./
   );
 
   assert.throws(
     () => validateBillPayload({ name: 'Hosting', amount_rsd: 12000, recurrence: 'yearly', due_day: 12 }),
-    /yearly bills require next_due_date/
+    /Za godišnje obaveze unesite datum dospeća\./
   );
 });

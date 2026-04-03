@@ -12,6 +12,11 @@ export function formatDateOnly(date) {
 
 export function parseDateOnly(value) {
   if (!value) return null;
+  if (value instanceof Date) {
+    if (Number.isNaN(value.getTime())) return null;
+    return new Date(Date.UTC(value.getUTCFullYear(), value.getUTCMonth(), value.getUTCDate()));
+  }
+  if (typeof value !== 'string') return null;
   const [year, month, day] = value.split('-').map(Number);
   if (!year || !month || !day) return null;
   const date = new Date(Date.UTC(year, month - 1, day));

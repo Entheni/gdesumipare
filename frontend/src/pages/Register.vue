@@ -15,7 +15,7 @@
       </button>
       <p v-if="error" class="text-red-600 text-sm">{{ error }}</p>
     </form>
-    <p class="text-sm mt-4">Već imate nalog? <router-link to="/login" class="text-blue-700">Prijavite se</router-link></p>
+    <p class="text-sm mt-4">Već imate nalog? <router-link to="/prijava" class="text-blue-700">Prijavite se</router-link></p>
   </div>
 </template>
 
@@ -34,16 +34,16 @@ async function submit() {
   loading.value = true;
   error.value = '';
   try {
-    await api.post('/api/auth/register', {
+    await api.post('/api/autentikacija/registracija', {
       email: email.value,
       password: password.value,
     });
-    const { data } = await api.post('/api/auth/login', {
+    const { data } = await api.post('/api/autentikacija/prijava', {
       email: email.value,
       password: password.value,
     });
     setAuthToken(data.token);
-    router.push('/dashboard');
+    router.push('/pregled');
   } catch (e) {
     error.value = e?.response?.data?.error || 'Greška pri registraciji';
   } finally {

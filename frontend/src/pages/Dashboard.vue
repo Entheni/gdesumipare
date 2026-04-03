@@ -5,7 +5,7 @@
         <h1 class="text-3xl font-semibold tracking-tight">Pregled troškova</h1>
         <p class="muted mt-1">Pregled mesečnog opterećenja, narednih dospeća i svih aktivnih obaveza.</p>
       </div>
-      <router-link to="/add-bill" class="btn-primary">+ Nova obaveza</router-link>
+      <router-link to="/obaveze/dodaj" class="btn-primary">+ Nova obaveza</router-link>
     </div>
 
     <div class="grid gap-4 md:grid-cols-3">
@@ -63,7 +63,7 @@
                 </td>
                 <td class="py-4">
                   <div class="flex flex-wrap gap-3">
-                    <router-link :to="`/bills/${bill.id}/edit`" class="btn-ghost">Izmeni</router-link>
+                    <router-link :to="`/obaveze/${bill.id}/izmeni`" class="btn-ghost">Izmeni</router-link>
                     <button class="btn-ghost text-red-600" @click="removeBill(bill)">Obriši</button>
                   </div>
                 </td>
@@ -159,7 +159,7 @@ async function fetchBills() {
   loading.value = true;
   error.value = '';
   try {
-    const { data } = await api.get('/api/bills');
+    const { data } = await api.get('/api/obaveze');
     bills.value = data.bills || [];
   } catch (e) {
     error.value = e?.response?.data?.error || 'Neuspešno učitavanje računa';
@@ -172,7 +172,7 @@ async function fetchStats() {
   statsLoading.value = true;
   statsError.value = '';
   try {
-    const { data } = await api.get('/api/stats/monthly');
+    const { data } = await api.get('/api/statistika/mesecno');
     categories.value = data.categories || [];
   } catch (e) {
     statsError.value = e?.response?.data?.error || 'Neuspešno učitavanje statistike';
@@ -185,7 +185,7 @@ async function fetchOverview() {
   overviewLoading.value = true;
   overviewError.value = '';
   try {
-    const { data } = await api.get('/api/stats/overview');
+    const { data } = await api.get('/api/statistika/pregled');
     Object.assign(overview, {
       total_monthly_rsd: data.total_monthly_rsd || 0,
       total_bills: data.total_bills || 0,
@@ -205,7 +205,7 @@ async function removeBill(bill) {
   }
 
   try {
-    await api.delete(`/api/bills/${bill.id}`);
+    await api.delete(`/api/obaveze/${bill.id}`);
     await Promise.all([fetchBills(), fetchStats(), fetchOverview()]);
   } catch (e) {
     error.value = e?.response?.data?.error || 'Greška pri brisanju stavke';

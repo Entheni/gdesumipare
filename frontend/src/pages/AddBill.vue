@@ -50,7 +50,7 @@
 
       <div class="flex flex-wrap gap-3">
         <button :disabled="loading" class="btn-primary">{{ loading ? 'Čuvanje...' : isEditing ? 'Sačuvaj izmene' : 'Sačuvaj' }}</button>
-        <router-link to="/dashboard" class="btn-secondary">Otkaži</router-link>
+        <router-link to="/pregled" class="btn-secondary">Otkaži</router-link>
       </div>
 
       <p v-if="error" class="text-red-600 text-sm">{{ error }}</p>
@@ -97,7 +97,7 @@ async function loadBill() {
   loading.value = true;
   error.value = '';
   try {
-    const { data } = await api.get(`/api/bills/${route.params.id}`);
+    const { data } = await api.get(`/api/obaveze/${route.params.id}`);
     assignBill(data.bill);
   } catch (e) {
     error.value = e?.response?.data?.error || 'Neuspešno učitavanje stavke';
@@ -121,12 +121,12 @@ async function submit() {
     };
 
     if (isEditing.value) {
-      await api.put(`/api/bills/${route.params.id}`, payload);
+      await api.put(`/api/obaveze/${route.params.id}`, payload);
     } else {
-      await api.post('/api/bills', payload);
+      await api.post('/api/obaveze', payload);
     }
 
-    router.push('/dashboard');
+    router.push('/pregled');
   } catch (e) {
     error.value = e?.response?.data?.error || 'Greška pri čuvanju';
   } finally {

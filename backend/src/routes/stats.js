@@ -2,10 +2,11 @@ import { Router } from 'express';
 import db from '../db/knex.js';
 import { requireAuth } from '../utils/auth.js';
 import { buildOverview, getMonthlyAmount } from '../utils/billing.js';
+import { logError } from '../utils/logger.js';
 
 const router = Router();
 
-router.get('/monthly', requireAuth, async (req, res) => {
+router.get('/mesecno', requireAuth, async (req, res) => {
   try {
     const bills = await db('bills').where({ user_id: req.userId });
     const grouped = new Map();
@@ -24,17 +25,19 @@ router.get('/monthly', requireAuth, async (req, res) => {
       .sort((left, right) => (left.category || '').localeCompare(right.category || ''));
 
     res.json({ categories });
-  } catch {
-    res.status(500).json({ error: 'failed to load monthly stats' });
+  } catch (err) {
+    logError('Neuspešno učitavanje mesečne statistike.', err, { ruta: 'statistika/mesecno', userId: req.userId });
+    res.status(500).json({ error: 'Neuspešno učitavanje mesečne statistike.' });
   }
 });
 
-router.get('/overview', requireAuth, async (req, res) => {
+router.get('/pregled', requireAuth, async (req, res) => {
   try {
     const bills = await db('bills').where({ user_id: req.userId }).orderBy('created_at', 'desc');
     res.json(buildOverview(bills));
-  } catch {
-    res.status(500).json({ error: 'failed to load overview stats' });
+  } catch (err) {
+    logError('Neuspešno učitavanje pregleda statistike.', err, { ruta: 'statistika/pregled', userId: req.userId });
+    res.status(500).json({ error: 'Neuspešno učitavanje pregleda statistike.' });
   }
 });
 

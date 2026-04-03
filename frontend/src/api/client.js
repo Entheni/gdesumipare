@@ -25,8 +25,8 @@ api.interceptors.response.use(
   (error) => {
     if (error?.response?.status === 401 && authToken.value) {
       clearAuthToken();
-      if (window.location.pathname !== '/login') {
-        window.location.assign('/login');
+      if (window.location.pathname !== '/prijava') {
+        window.location.assign('/prijava');
       }
     }
 

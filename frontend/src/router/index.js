@@ -8,13 +8,19 @@ const AddBill = () => import('../pages/AddBill.vue');
 const Settings = () => import('../pages/Settings.vue');
 
 const routes = [
-  { path: '/', redirect: '/dashboard' },
-  { path: '/login', component: Login, meta: { public: true } },
-  { path: '/register', component: Register, meta: { public: true } },
-  { path: '/dashboard', component: Dashboard, meta: { requiresAuth: true } },
-  { path: '/add-bill', component: AddBill, meta: { requiresAuth: true } },
-  { path: '/bills/:id/edit', component: AddBill, meta: { requiresAuth: true } },
-  { path: '/settings', component: Settings, meta: { requiresAuth: true } },
+  { path: '/', redirect: '/pregled' },
+  { path: '/prijava', component: Login, meta: { public: true } },
+  { path: '/registracija', component: Register, meta: { public: true } },
+  { path: '/pregled', component: Dashboard, meta: { requiresAuth: true } },
+  { path: '/obaveze/dodaj', component: AddBill, meta: { requiresAuth: true } },
+  { path: '/obaveze/:id/izmeni', component: AddBill, meta: { requiresAuth: true } },
+  { path: '/podesavanja', component: Settings, meta: { requiresAuth: true } },
+  { path: '/login', redirect: '/prijava' },
+  { path: '/register', redirect: '/registracija' },
+  { path: '/dashboard', redirect: '/pregled' },
+  { path: '/add-bill', redirect: '/obaveze/dodaj' },
+  { path: '/bills/:id/edit', redirect: (to) => `/obaveze/${to.params.id}/izmeni` },
+  { path: '/settings', redirect: '/podesavanja' },
 ];
 
 const router = createRouter({
@@ -26,10 +32,10 @@ router.beforeEach((to) => {
   const token = authToken.value;
   const isAuthed = isTokenValid(token);
   if (to.meta.requiresAuth && !isAuthed) {
-    return { path: '/login' };
+    return { path: '/prijava' };
   }
-  if (to.meta.public && isAuthed && (to.path === '/login' || to.path === '/register')) {
-    return { path: '/dashboard' };
+  if (to.meta.public && isAuthed && (to.path === '/prijava' || to.path === '/registracija')) {
+    return { path: '/pregled' };
   }
   return true;
 });
