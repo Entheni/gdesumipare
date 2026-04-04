@@ -1,5 +1,6 @@
 # Node dependencies
 node_modules/
+**/node_modules/
 
 # Build outputs
 dist/
@@ -8,6 +9,7 @@ build/
 .vite/
 coverage/
 .nyc_output/
+*.tsbuildinfo
 
 # Logs
 logs/
@@ -38,6 +40,7 @@ frontend/.env.*
 .idea/
 *.swp
 *.swo
+*.iml
 
 # OS files
 .DS_Store
@@ -48,3 +51,19 @@ desktop.ini
 .eslintcache
 .parcel-cache/
 .turbo/
+
+# Native mobile / Capacitor local files
+frontend/android/.gradle/
+frontend/android/captures/
+frontend/android/local.properties
+frontend/android/**/build/
+frontend/ios/DerivedData/
+frontend/ios/**/Pods/
+frontend/ios/**/build/
+frontend/ios/**/xcuserdata/
+frontend/ios/**/.symlinks/
+
+# Misc local tooling
+.history/
+.temp/
+tmp/
