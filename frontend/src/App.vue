@@ -8,13 +8,13 @@
           <template v-if="isAuthed">
             <router-link to="/pregled" class="nav-link">Pregled</router-link>
             <router-link to="/snapshot" class="nav-link">Snapshot</router-link>
+            <router-link to="/ciljevi" class="nav-link">Ciljevi</router-link>
             <router-link to="/obaveze" class="nav-link">Obaveze</router-link>
             <router-link to="/prihodi" class="nav-link">Prihodi</router-link>
             <router-link to="/podesavanja" class="nav-link">Podešavanja</router-link>
           </template>
         </div>
         <div class="flex items-center gap-3">
-          <span class="text-sm muted">{{ themeLabel }}</span>
           <router-link v-if="isAuthed" to="/obaveze/dodaj" class="btn-primary">+ Nova obaveza</router-link>
           <router-link v-if="!isAuthed" to="/prijava" class="nav-link">Prijava</router-link>
           <router-link v-if="!isAuthed" to="/registracija" class="nav-link">Registracija</router-link>
@@ -33,14 +33,10 @@ import { computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import api, { clearAuthToken } from './api/client.js';
 import { authToken } from './auth/session.js';
-import { setThemePreference, themePreference } from './theme.js';
+import { setThemePreference } from './theme.js';
 
 const router = useRouter();
 const isAuthed = computed(() => !!authToken.value);
-const themeLabel = computed(() => {
-  if (themePreference.value === 'system') return 'Tema: sistem';
-  return themePreference.value === 'dark' ? 'Tema: tamna' : 'Tema: svetla';
-});
 
 function logout() {
   clearAuthToken();

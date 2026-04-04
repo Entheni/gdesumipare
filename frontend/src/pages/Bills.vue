@@ -15,7 +15,7 @@
       </section>
       <section class="surface-card p-5">
         <p class="muted text-sm">Kasne</p>
-        <p class="mt-3 text-3xl font-semibold text-red-700">{{ overview.overdue_bills_count }}</p>
+        <p class="mt-3 text-3xl font-semibold text-negative">{{ overview.overdue_bills_count }}</p>
       </section>
       <section class="surface-card p-5">
         <p class="muted text-sm">Prosecno mesecno</p>
@@ -33,7 +33,7 @@
         </div>
 
         <div v-if="loading" class="muted mt-4">Ucitavanje...</div>
-        <div v-else-if="error" class="mt-4 text-red-600">{{ error }}</div>
+        <div v-else-if="error" class="message-danger mt-4">{{ error }}</div>
         <div v-else-if="!bills.length" class="mt-4 muted">Jos nema unetih obaveza.</div>
         <div v-else class="mt-4 overflow-x-auto">
           <table class="min-w-full text-sm">
@@ -73,8 +73,8 @@
                 <td class="py-4">
                   <div class="flex flex-wrap gap-3">
                     <router-link :to="`/obaveze/${bill.id}/izmeni`" class="btn-ghost">Izmeni</router-link>
-                    <button class="btn-ghost text-emerald-700" @click="markAsPaid(bill)">Evidentiraj uplatu</button>
-                    <button class="btn-ghost text-red-600" @click="removeBill(bill)">Obrisi</button>
+                    <button class="btn-ghost text-positive" @click="markAsPaid(bill)">Evidentiraj uplatu</button>
+                    <button class="btn-ghost text-negative" @click="removeBill(bill)">Obrisi</button>
                   </div>
                 </td>
               </tr>
@@ -103,7 +103,7 @@
         <section class="surface-card p-6">
           <h2 class="text-xl font-semibold">Kategorije</h2>
           <div v-if="statsLoading" class="muted mt-4">Ucitavanje...</div>
-          <div v-else-if="statsError" class="mt-4 text-red-600">{{ statsError }}</div>
+          <div v-else-if="statsError" class="message-danger mt-4">{{ statsError }}</div>
           <ul v-else class="mt-4 space-y-3 text-sm">
             <li v-for="category in categories" :key="category.category || 'uncategorized'" class="flex items-center justify-between gap-3">
               <span>{{ category.category || 'Ostalo' }}</span>
@@ -171,9 +171,9 @@ function dueLabel(daysUntilDue) {
 }
 
 function statusClass(bill) {
-  if (bill.is_overdue) return 'bg-red-100 text-red-700';
-  if (bill.is_paid) return 'bg-emerald-100 text-emerald-700';
-  return 'bg-amber-100 text-amber-700';
+  if (bill.is_overdue) return 'status-pill-danger';
+  if (bill.is_paid) return 'status-pill-positive';
+  return 'status-pill-warning';
 }
 
 async function fetchBills() {

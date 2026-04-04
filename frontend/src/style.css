@@ -3,40 +3,62 @@
 @tailwind utilities;
 
 :root {
-  --bg: #f4efe6;
-  --bg-accent: #dceee8;
-  --panel: rgba(255, 252, 245, 0.9);
-  --panel-strong: #fffaf2;
-  --text: #1f2937;
-  --muted: #667085;
-  --border: #d6d3d1;
-  --primary: #0f766e;
-  --primary-strong: #115e59;
-  --danger: #b42318;
-  --shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+  --bg: #f5f7f6;
+  --bg-accent: #eaf0ef;
+  --bg-accent-strong: #f9fbfb;
+  --panel: rgba(255, 255, 255, 0.92);
+  --panel-strong: #ffffff;
+  --panel-soft: #f9fbfb;
+  --text: #1b2430;
+  --muted: #6b7785;
+  --border: #d8dee6;
+  --border-strong: #c8d2dc;
+  --primary: #436c9e;
+  --primary-strong: #355781;
+  --accent: #5c8a72;
+  --accent-strong: #4d765f;
+  --warning: #7d8da6;
+  --warning-soft: #eef2f6;
+  --danger: #c4584d;
+  --danger-soft: #faece9;
+  --success-soft: #edf6f0;
+  --info-soft: #eef3f8;
+  --shadow: 0 20px 48px rgba(31, 42, 55, 0.07);
 }
 
 :root[data-theme='dark'] {
-  --bg: #0f1720;
-  --bg-accent: #102a35;
-  --panel: rgba(15, 23, 32, 0.88);
-  --panel-strong: #162231;
-  --text: #e5edf4;
-  --muted: #9fb0c2;
-  --border: #274053;
-  --primary: #2dd4bf;
-  --primary-strong: #14b8a6;
-  --danger: #f97066;
-  --shadow: 0 18px 44px rgba(2, 6, 23, 0.35);
+  --bg: #11161c;
+  --bg-accent: #172029;
+  --bg-accent-strong: #1e2a34;
+  --panel: rgba(24, 32, 41, 0.92);
+  --panel-strong: #1b2430;
+  --panel-soft: #202b36;
+  --text: #edf2f7;
+  --muted: #98a5b3;
+  --border: #2a3642;
+  --border-strong: #394857;
+  --primary: #7aa6d8;
+  --primary-strong: #93b8e2;
+  --accent: #78b091;
+  --accent-strong: #8dc0a4;
+  --warning: #8fa1b8;
+  --warning-soft: #24303a;
+  --danger: #e46d63;
+  --danger-soft: #352320;
+  --success-soft: #1d2f29;
+  --info-soft: #1c2935;
+  --shadow: 0 20px 52px rgba(2, 6, 23, 0.32);
 }
 
 body {
   min-height: 100vh;
   background:
-    radial-gradient(circle at top left, var(--bg-accent), transparent 32%),
+    radial-gradient(circle at top left, var(--bg-accent), transparent 28%),
+    radial-gradient(circle at top right, var(--bg-accent-strong), transparent 24%),
     linear-gradient(180deg, var(--bg), var(--bg));
   color: var(--text);
   transition: background-color 160ms ease, color 160ms ease;
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
@@ -51,6 +73,7 @@ a {
   background: var(--panel);
   backdrop-filter: blur(18px);
   border-color: var(--border);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
 }
 
 .surface-card {
@@ -72,7 +95,7 @@ a {
 .field:focus {
   outline: 2px solid transparent;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
 }
 
 .btn-primary,
@@ -95,6 +118,7 @@ a {
 .btn-primary {
   background: var(--primary);
   color: white;
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--primary) 22%, transparent);
 }
 
 .btn-primary:hover {
@@ -102,15 +126,15 @@ a {
 }
 
 .btn-secondary {
-  background: transparent;
+  background: color-mix(in srgb, var(--panel-strong) 88%, var(--bg-accent-strong));
   color: var(--text);
   border: 1px solid var(--border);
 }
 
 .btn-danger {
-  background: transparent;
+  background: color-mix(in srgb, var(--danger-soft) 78%, var(--panel-strong));
   color: var(--danger);
-  border: 1px solid rgba(180, 35, 24, 0.3);
+  border: 1px solid color-mix(in srgb, var(--danger) 24%, var(--border));
 }
 
 .btn-ghost {
@@ -121,11 +145,20 @@ a {
 .nav-link {
   font-size: 0.95rem;
   color: var(--muted);
+  padding: 0.45rem 0.75rem;
+  border-radius: 9999px;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.nav-link:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--primary) 8%, transparent);
 }
 
 .nav-link.router-link-active {
   color: var(--text);
   font-weight: 600;
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
 }
 
 .quick-link {
@@ -134,6 +167,13 @@ a {
   border: 1px solid var(--border);
   border-radius: 1rem;
   padding: 1rem;
+  background: var(--panel-soft);
+  transition: transform 120ms ease, border-color 120ms ease, background-color 120ms ease;
+}
+
+.quick-link:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--primary) 22%, var(--border));
   background: var(--panel-strong);
 }
 
@@ -205,7 +245,7 @@ a {
 .pricing-card-highlight {
   position: relative;
   border-color: color-mix(in srgb, var(--primary) 50%, var(--border));
-  box-shadow: 0 18px 44px rgba(15, 118, 110, 0.15);
+  box-shadow: 0 20px 46px color-mix(in srgb, var(--primary) 12%, transparent);
 }
 
 .pricing-badge {
@@ -230,7 +270,7 @@ a {
 }
 
 .plan-badge-free {
-  background: rgba(148, 163, 184, 0.16);
+  background: color-mix(in srgb, var(--warning) 16%, transparent);
   color: var(--text);
 }
 
@@ -240,8 +280,8 @@ a {
 }
 
 .plan-badge-family {
-  background: rgba(37, 99, 235, 0.14);
-  color: #1d4ed8;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent-strong);
 }
 
 .upgrade-hint {
@@ -276,4 +316,91 @@ a {
 
 .muted {
   color: var(--muted);
+}
+
+.text-positive {
+  color: var(--accent-strong);
+}
+
+.text-negative {
+  color: var(--danger);
+}
+
+.text-accent {
+  color: var(--primary-strong);
+}
+
+.text-warning {
+  color: var(--warning);
+}
+
+.status-pill {
+  display: inline-flex;
+  border-radius: 9999px;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.status-pill-positive {
+  background: var(--success-soft);
+  color: var(--accent-strong);
+}
+
+.status-pill-warning {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.status-pill-danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.status-pill-neutral {
+  background: color-mix(in srgb, var(--panel-soft) 75%, var(--bg-accent));
+  color: var(--text);
+}
+
+.message-success,
+.message-danger,
+.message-info {
+  font-size: 0.92rem;
+}
+
+.message-success {
+  color: var(--accent-strong);
+}
+
+.message-danger {
+  color: var(--danger);
+}
+
+.message-info {
+  color: var(--primary-strong);
+}
+
+.progress-track {
+  height: 0.75rem;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--panel-soft) 70%, var(--bg-accent));
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+}
+
+.progress-fill-warning {
+  background: linear-gradient(90deg, var(--warning), var(--primary));
+}
+
+.panel-soft {
+  background: var(--panel-soft);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
 }

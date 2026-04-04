@@ -53,7 +53,7 @@
         <router-link to="/obaveze" class="btn-secondary">Otkaži</router-link>
       </div>
 
-      <p v-if="error" class="text-red-600 text-sm">{{ error }}</p>
+      <p v-if="error" class="message-danger">{{ error }}</p>
     </form>
 
     <section v-if="isEditing" class="surface-card p-6 space-y-5">
@@ -84,7 +84,7 @@
         </div>
       </form>
 
-      <p v-if="paymentError" class="text-red-600 text-sm">{{ paymentError }}</p>
+      <p v-if="paymentError" class="message-danger">{{ paymentError }}</p>
 
       <div v-if="paymentsLoading" class="muted">Učitavanje uplata...</div>
       <ul v-else-if="payments.length" class="space-y-3">

@@ -16,6 +16,7 @@ export function applyTheme(preference = themePreference.value) {
   const theme = resolveTheme(preference);
   document.documentElement.dataset.theme = theme;
   document.documentElement.style.colorScheme = theme;
+  window.dispatchEvent(new CustomEvent('gsp-theme-change', { detail: { theme, preference } }));
 }
 
 export function setThemePreference(preference, { persist = true } = {}) {

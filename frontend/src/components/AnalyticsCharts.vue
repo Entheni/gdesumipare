@@ -51,7 +51,7 @@ import {
   Title,
   Tooltip,
 } from 'chart.js';
-import { computed } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import { Bar, Line, Pie } from 'vue-chartjs';
 
 ChartJS.register(ArcElement, BarElement, CategoryScale, Legend, LinearScale, LineElement, PointElement, Title, Tooltip, Filler);
@@ -71,16 +71,45 @@ const props = defineProps({
   },
 });
 
-const palette = ['#0f766e', '#f59e0b', '#ef4444', '#14b8a6', '#2563eb', '#84cc16', '#f97316', '#8b5cf6'];
+const themeColors = ref(readThemeColors());
 const hasExpenseBreakdown = computed(() => props.expenseBreakdown.some((item) => Number(item.total_rsd || 0) > 0));
 const hasMonthlyTotals = computed(() => props.monthlyTotals.length > 0);
+
+function readThemeColors() {
+  const styles = getComputedStyle(document.documentElement);
+  return {
+    primary: styles.getPropertyValue('--primary').trim() || '#436c9e',
+    primaryStrong: styles.getPropertyValue('--primary-strong').trim() || '#355781',
+    accent: styles.getPropertyValue('--accent').trim() || '#5c8a72',
+    accentStrong: styles.getPropertyValue('--accent-strong').trim() || '#4d765f',
+    warning: styles.getPropertyValue('--warning').trim() || '#7d8da6',
+    danger: styles.getPropertyValue('--danger').trim() || '#c4584d',
+    text: styles.getPropertyValue('--text').trim() || '#1b2430',
+    border: styles.getPropertyValue('--border').trim() || '#d8dee6',
+  };
+}
+
+function syncThemeColors() {
+  themeColors.value = readThemeColors();
+}
+
+const palette = computed(() => [
+  themeColors.value.primary,
+  themeColors.value.accent,
+  themeColors.value.warning,
+  themeColors.value.primaryStrong,
+  themeColors.value.accentStrong,
+  themeColors.value.danger,
+  '#89a8c8',
+  '#91b89d',
+]);
 
 const pieData = computed(() => ({
   labels: props.expenseBreakdown.map((item) => item.category),
   datasets: [
     {
       data: props.expenseBreakdown.map((item) => Number(item.total_rsd || 0)),
-      backgroundColor: props.expenseBreakdown.map((_, index) => palette[index % palette.length]),
+      backgroundColor: props.expenseBreakdown.map((_, index) => palette.value[index % palette.value.length]),
       borderWidth: 0,
     },
   ],
@@ -91,19 +120,19 @@ const barData = computed(() => ({
   datasets: [
     {
       label: 'Prihodi',
-      backgroundColor: '#0f766e',
+      backgroundColor: themeColors.value.accent,
       borderRadius: 8,
       data: props.monthlyTotals.map((item) => Number(item.income_rsd || 0)),
     },
     {
       label: 'Rashodi',
-      backgroundColor: '#f59e0b',
+      backgroundColor: themeColors.value.warning,
       borderRadius: 8,
       data: props.monthlyTotals.map((item) => Number(item.expense_rsd || 0)),
     },
     {
       label: 'Usteda',
-      backgroundColor: '#2563eb',
+      backgroundColor: themeColors.value.primary,
       borderRadius: 8,
       data: props.monthlyTotals.map((item) => Number(item.savings_rsd || 0)),
     },
@@ -116,8 +145,8 @@ const lineData = computed(() => ({
     {
       label: 'Usteda',
       data: props.monthlyTotals.map((item) => Number(item.savings_rsd || 0)),
-      borderColor: '#0f766e',
-      backgroundColor: 'rgba(15, 118, 110, 0.12)',
+      borderColor: themeColors.value.primary,
+      backgroundColor: `${themeColors.value.primary}1f`,
       tension: 0.35,
       fill: true,
       pointRadius: 4,
@@ -125,49 +154,67 @@ const lineData = computed(() => ({
   ],
 }));
 
-const sharedScale = {
+const sharedScale = computed(() => ({
   grid: {
-    color: 'rgba(148, 163, 184, 0.18)',
+    color: `${themeColors.value.border}88`,
   },
   ticks: {
-    color: '#64748b',
+    color: themeColors.value.text,
   },
-};
+}));
 
-const pieOptions = {
+const pieOptions = computed(() => ({
   maintainAspectRatio: false,
   plugins: {
     legend: {
       position: 'bottom',
+      labels: {
+        color: themeColors.value.text,
+      },
     },
   },
-};
+}));
 
-const barOptions = {
-  maintainAspectRatio: false,
-  responsive: true,
-  plugins: {
-    legend: {
-      position: 'bottom',
-    },
-  },
-  scales: {
-    x: sharedScale,
-    y: sharedScale,
-  },
-};
-
-const lineOptions = {
+const barOptions = computed(() => ({
   maintainAspectRatio: false,
   responsive: true,
   plugins: {
     legend: {
       position: 'bottom',
+      labels: {
+        color: themeColors.value.text,
+      },
     },
   },
   scales: {
-    x: sharedScale,
-    y: sharedScale,
+    x: sharedScale.value,
+    y: sharedScale.value,
   },
-};
+}));
+
+const lineOptions = computed(() => ({
+  maintainAspectRatio: false,
+  responsive: true,
+  plugins: {
+    legend: {
+      position: 'bottom',
+      labels: {
+        color: themeColors.value.text,
+      },
+    },
+  },
+  scales: {
+    x: sharedScale.value,
+    y: sharedScale.value,
+  },
+}));
+
+onMounted(() => {
+  syncThemeColors();
+  window.addEventListener('gsp-theme-change', syncThemeColors);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('gsp-theme-change', syncThemeColors);
+});
 </script>

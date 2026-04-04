@@ -33,7 +33,7 @@
 
         <ul class="mt-6 space-y-3 text-sm">
           <li v-for="item in plan.bullets" :key="item" class="flex gap-3">
-            <span class="text-emerald-700 font-semibold">+</span>
+            <span class="text-positive font-semibold">+</span>
             <span>{{ item }}</span>
           </li>
         </ul>
@@ -88,14 +88,14 @@
 const plans = [
   {
     name: 'Free',
-    tagline: 'Za pojedinca koji tek uvodi red u troskove i obaveze.',
+    tagline: 'Za pojedinca koji tek uvodi red u troskove, obaveze i osnovne ciljeve stednje.',
     price: '0 RSD',
     billing: 'zauvek besplatno',
     bullets: [
       'osnovni pregled prihoda i rashoda',
       'pracenje obaveza i podsetnici',
       'snapshot samo za tekuci mesec',
-      'osnovni dashboard i kategorije',
+      'osnovni dashboard, kategorije i jedan aktivan cilj stednje',
     ],
     ctaLabel: 'Kreni besplatno',
     ctaTo: '/registracija',
@@ -107,7 +107,7 @@ const plans = [
     billing: 'mesecno ili 3.990 RSD godisnje',
     bullets: [
       'puna istorija snapshot-a i trendova',
-      'napredni uvidi po kategorijama i mesecima',
+      'napredni uvidi po kategorijama, mesecima i vise ciljeva stednje',
       'izvoz podataka i PDF izvestaji',
       'premium reminder i analitika sloj',
     ],
@@ -123,8 +123,8 @@ const plans = [
     bullets: [
       'sve iz Plus paketa',
       'vise clanova domacinstva',
-      'zajednicki budzet i deljene obaveze',
-      'porodicni pregled troskova i ustede',
+      'family capability spreman za shared budzet',
+      'porodicni pregled troskova, ustede i buducih zajednickih ciljeva',
     ],
     ctaLabel: 'Izaberi Family',
     ctaTo: '/registracija',
@@ -136,6 +136,7 @@ const features = [
   { name: 'Obaveze i email podsetnici', free: true, plus: true, family: true },
   { name: 'Snapshot pregled', note: 'mesecni pregled planirano / placeno / ostaje', free: 'samo tekuci mesec', plus: 'puna istorija', family: 'puna istorija' },
   { name: 'Trendovi i istorija', note: 'uporedni pregled vise meseci', free: 'osnovno', plus: 'napredno', family: 'napredno' },
+  { name: 'Ciljevi stednje', note: 'pracenje progresa i forecast za auto, stan ili fond', free: '1 cilj', plus: 'vise ciljeva', family: 'vise ciljeva + shared spremnost' },
   { name: 'Kategorije i analitika', free: 'osnovno', plus: 'napredno', family: 'napredno' },
   { name: 'PDF izvestaji i izvoz', free: false, plus: true, family: true },
   { name: 'Dugorocna istorija podataka', free: 'poslednja 3 meseca', plus: 'neograniceno', family: 'neograniceno' },

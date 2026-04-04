@@ -1,22 +1,30 @@
 ﻿<template>
-  <div class="max-w-sm mx-auto p-6">
-    <h1 class="text-2xl font-semibold mb-4">Registracija</h1>
-    <form @submit.prevent="submit" class="space-y-4">
-      <div>
-        <label class="block text-sm font-medium mb-1">Email</label>
-        <input v-model="email" type="email" required class="w-full border rounded p-2" />
+  <div class="max-w-md mx-auto p-6">
+    <div class="surface-card p-8">
+      <p class="text-sm font-semibold uppercase tracking-[0.16em] muted">Registracija</p>
+      <h1 class="text-3xl font-semibold tracking-tight mt-3">Postavi sistem za obaveze i štednju</h1>
+      <p class="muted mt-2 text-sm">Napravite nalog i odmah dobijate pregled rashoda, prihoda i ciljeva na jednom mestu.</p>
+
+      <form @submit.prevent="submit" class="space-y-4 mt-6">
+        <div>
+          <label class="block text-sm font-medium mb-2">Email</label>
+          <input v-model="email" type="email" required class="field" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-2">Lozinka</label>
+          <input v-model="password" type="password" required class="field" />
+        </div>
+        <button :disabled="loading" class="btn-primary w-full justify-center">
+          {{ loading ? 'Kreiranje...' : 'Kreiraj nalog' }}
+        </button>
+        <p v-if="error" class="message-danger">{{ error }}</p>
+      </form>
+
+      <div class="space-y-2 text-sm mt-6">
+        <p>Već imate nalog? <router-link to="/prijava" class="text-accent font-medium">Prijavite se</router-link></p>
+        <p>Pre registracije pogledajte <router-link to="/paketi" class="text-accent font-medium">pakete i poređenje opcija</router-link>.</p>
       </div>
-      <div>
-        <label class="block text-sm font-medium mb-1">Lozinka</label>
-        <input v-model="password" type="password" required class="w-full border rounded p-2" />
-      </div>
-      <button :disabled="loading" class="w-full bg-green-600 text-white rounded p-2 disabled:opacity-50">
-        {{ loading ? 'Kreiranje...' : 'Kreiraj nalog' }}
-      </button>
-      <p v-if="error" class="text-red-600 text-sm">{{ error }}</p>
-    </form>
-    <p class="text-sm mt-4">Već imate nalog? <router-link to="/prijava" class="text-blue-700">Prijavite se</router-link></p>
-    <p class="text-sm mt-2">Pre registracije pogledajte <router-link to="/paketi" class="text-blue-700">pakete i poređenje opcija</router-link>.</p>
+    </div>
   </div>
 </template>
 

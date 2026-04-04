@@ -17,5 +17,6 @@ export function getTierCapabilities(tier) {
     can_use_advanced_charts: hasPlanAccess(normalized, 'plus'),
     can_use_exports: hasPlanAccess(normalized, 'plus'),
     can_use_household_features: hasPlanAccess(normalized, 'family'),
+    max_savings_goals: normalized === 'free' ? 1 : null,
   };
 }

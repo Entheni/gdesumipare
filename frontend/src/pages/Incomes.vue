@@ -10,7 +10,7 @@
     <div class="grid gap-4 md:grid-cols-3">
       <section class="surface-card p-5">
         <p class="muted text-sm">Mesecni prihodi</p>
-        <p class="mt-3 text-3xl font-semibold text-emerald-700">{{ formatCurrency(overview.monthly_income_rsd) }}</p>
+        <p class="mt-3 text-3xl font-semibold text-positive">{{ formatCurrency(overview.monthly_income_rsd) }}</p>
       </section>
       <section class="surface-card p-5">
         <p class="muted text-sm">Prosecno mesecno troskovi</p>
@@ -18,7 +18,7 @@
       </section>
       <section class="surface-card p-5">
         <p class="muted text-sm">Projekcija ustede</p>
-        <p class="mt-3 text-3xl font-semibold" :class="overview.projected_savings_rsd >= 0 ? 'text-emerald-700' : 'text-red-700'">
+        <p class="mt-3 text-3xl font-semibold" :class="overview.projected_savings_rsd >= 0 ? 'text-positive' : 'text-negative'">
           {{ formatCurrency(overview.projected_savings_rsd) }}
         </p>
       </section>
@@ -67,7 +67,7 @@
             <button :disabled="incomeLoading" class="btn-primary">
               {{ incomeLoading ? 'Cuvanje...' : 'Dodaj prihod' }}
             </button>
-            <p v-if="incomeError" class="text-sm text-red-600">{{ incomeError }}</p>
+            <p v-if="incomeError" class="message-danger">{{ incomeError }}</p>
           </div>
         </form>
       </section>
@@ -75,7 +75,7 @@
       <section class="surface-card p-6">
         <h2 class="text-xl font-semibold">Lista prihoda</h2>
         <div v-if="loading" class="muted mt-4">Ucitavanje...</div>
-        <div v-else-if="error" class="mt-4 text-red-600">{{ error }}</div>
+        <div v-else-if="error" class="message-danger mt-4">{{ error }}</div>
         <ul v-else class="mt-4 space-y-3">
           <li
             v-for="income in incomes"
@@ -89,8 +89,8 @@
                 <div class="muted text-sm mt-1">{{ incomeRecurrenceLabel(income) }}</div>
               </div>
               <div class="text-right">
-                <div class="font-semibold text-emerald-700">{{ formatCurrency(income.amount_rsd) }}</div>
-                <button class="btn-ghost text-red-600 mt-2" @click="removeIncome(income)">Obrisi</button>
+                <div class="font-semibold text-positive">{{ formatCurrency(income.amount_rsd) }}</div>
+                <button class="btn-ghost text-negative mt-2" @click="removeIncome(income)">Obrisi</button>
               </div>
             </div>
           </li>

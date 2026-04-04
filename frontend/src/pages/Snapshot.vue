@@ -21,7 +21,7 @@
     <section class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <article class="surface-card p-5">
         <div class="muted text-sm">Planirani prihodi</div>
-        <div class="mt-3 text-2xl font-semibold text-emerald-700">{{ formatCurrency(snapshot.planned_income_rsd) }}</div>
+        <div class="mt-3 text-2xl font-semibold text-positive">{{ formatCurrency(snapshot.planned_income_rsd) }}</div>
         <div class="muted text-xs mt-2">{{ snapshot.month_label || 'Izabrani mesec' }}</div>
       </article>
       <article class="surface-card p-5">
@@ -31,12 +31,12 @@
       </article>
       <article class="surface-card p-5">
         <div class="muted text-sm">Vec placeno</div>
-        <div class="mt-3 text-2xl font-semibold text-teal-700">{{ formatCurrency(snapshot.paid_expense_rsd) }}</div>
+        <div class="mt-3 text-2xl font-semibold text-accent">{{ formatCurrency(snapshot.paid_expense_rsd) }}</div>
         <div class="muted text-xs mt-2">Placeno obaveza: {{ snapshot.bills_paid_count }}</div>
       </article>
       <article class="surface-card p-5">
         <div class="muted text-sm">Projekcija ustede</div>
-        <div class="mt-3 text-2xl font-semibold" :class="snapshot.projected_savings_rsd >= 0 ? 'text-emerald-700' : 'text-red-700'">
+        <div class="mt-3 text-2xl font-semibold" :class="snapshot.projected_savings_rsd >= 0 ? 'text-positive' : 'text-negative'">
           {{ formatCurrency(snapshot.projected_savings_rsd) }}
         </div>
         <div class="muted text-xs mt-2">Stopa: {{ Number(snapshot.savings_rate_percent || 0).toFixed(1) }}%</div>
@@ -72,7 +72,7 @@
       </div>
 
       <div v-if="analyticsLoading" class="muted">Ucitavanje analitike...</div>
-      <div v-else-if="analyticsError" class="text-red-600">{{ analyticsError }}</div>
+      <div v-else-if="analyticsError" class="message-danger">{{ analyticsError }}</div>
       <div v-else class="space-y-6">
         <div class="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
           <section class="rounded-3xl border p-5" style="border-color: var(--border)">
@@ -130,7 +130,7 @@
             <div class="grid gap-4 md:grid-cols-3">
               <div>
                 <div class="muted text-sm">Prikazani prihodi</div>
-                <div class="mt-2 text-xl font-semibold text-emerald-700">{{ formatCurrency(analyticsSummary.income_rsd) }}</div>
+                <div class="mt-2 text-xl font-semibold text-positive">{{ formatCurrency(analyticsSummary.income_rsd) }}</div>
               </div>
               <div>
                 <div class="muted text-sm">Prikazani rashodi</div>
@@ -138,7 +138,7 @@
               </div>
               <div>
                 <div class="muted text-sm">Prikazana usteda</div>
-                <div class="mt-2 text-xl font-semibold" :class="analyticsSummary.savings_rsd >= 0 ? 'text-emerald-700' : 'text-red-700'">
+                <div class="mt-2 text-xl font-semibold" :class="analyticsSummary.savings_rsd >= 0 ? 'text-positive' : 'text-negative'">
                   {{ formatCurrency(analyticsSummary.savings_rsd) }}
                 </div>
               </div>
@@ -182,11 +182,12 @@
           <button type="button" class="tab-chip" :class="{ active: detailsTab === 'obaveze' }" @click="detailsTab = 'obaveze'">Obaveze</button>
           <button type="button" class="tab-chip" :class="{ active: detailsTab === 'prihodi' }" @click="detailsTab = 'prihodi'">Prihodi</button>
           <button type="button" class="tab-chip" :class="{ active: detailsTab === 'sazetak' }" @click="detailsTab = 'sazetak'">Sazetak</button>
+          <button type="button" class="tab-chip" :class="{ active: detailsTab === 'ciljevi' }" @click="detailsTab = 'ciljevi'">Ciljevi</button>
         </div>
       </div>
 
       <div v-if="loading" class="muted mt-5">Ucitavanje snapshot pregleda...</div>
-      <div v-else-if="error" class="text-red-600 mt-5">{{ error }}</div>
+      <div v-else-if="error" class="message-danger mt-5">{{ error }}</div>
       <div v-else class="mt-5">
         <div v-if="detailsTab === 'obaveze'" class="space-y-3">
           <article
@@ -207,7 +208,7 @@
               </div>
               <div class="text-right">
                 <div class="font-semibold">{{ formatCurrency(item.amount_rsd) }}</div>
-                <span class="inline-flex rounded-full px-3 py-1 text-xs font-medium mt-2" :class="statusClass(item)">
+                <span class="status-pill mt-2" :class="statusClass(item)">
                   {{ item.status_label }}
                 </span>
               </div>
@@ -228,25 +229,90 @@
                 <div class="font-medium">{{ income.name }}</div>
                 <div class="muted text-sm mt-1">{{ formatDate(income.income_date) }}</div>
               </div>
-              <div class="font-semibold text-emerald-700">{{ formatCurrency(income.amount_rsd) }}</div>
+              <div class="font-semibold text-positive">{{ formatCurrency(income.amount_rsd) }}</div>
             </div>
           </article>
           <p v-if="!snapshot.incomes.length" class="muted">Nema planiranih prihoda za ovaj mesec.</p>
         </div>
 
-        <div v-else class="grid gap-4 md:grid-cols-3">
-          <div class="rounded-2xl border p-4" style="border-color: var(--border)">
+        <div v-else-if="detailsTab === 'sazetak'" class="grid gap-4 md:grid-cols-3">
+          <div class="panel-soft p-4">
             <div class="muted text-sm">Neplacene obaveze</div>
             <div class="mt-2 text-xl font-semibold">{{ snapshot.unpaid_bills_count }}</div>
           </div>
-          <div class="rounded-2xl border p-4" style="border-color: var(--border)">
+          <div class="panel-soft p-4">
             <div class="muted text-sm">Jos za placanje</div>
             <div class="mt-2 text-xl font-semibold">{{ formatCurrency(snapshot.remaining_expense_rsd) }}</div>
           </div>
-          <div class="rounded-2xl border p-4" style="border-color: var(--border)">
+          <div class="panel-soft p-4">
             <div class="muted text-sm">Izabrani paket</div>
             <div class="mt-3">
               <PlanBadge :tier="capabilities.tier" />
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="space-y-4">
+          <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div class="panel-soft p-4">
+              <div class="muted text-sm">Aktivni ciljevi</div>
+              <div class="mt-2 text-xl font-semibold">{{ goalsSummary.active_goals_count }}</div>
+            </div>
+            <div class="panel-soft p-4">
+              <div class="muted text-sm">Ukupno sačuvano</div>
+              <div class="mt-2 text-xl font-semibold text-positive">{{ formatCurrency(goalsSummary.total_saved_rsd) }}</div>
+            </div>
+            <div class="panel-soft p-4">
+              <div class="muted text-sm">Plan za ciljeve mesečno</div>
+              <div class="mt-2 text-xl font-semibold text-accent">{{ formatCurrency(goalsSummary.monthly_goal_commitment_rsd) }}</div>
+            </div>
+            <div class="panel-soft p-4">
+              <div class="muted text-sm">Snapshot minus plan</div>
+              <div class="mt-2 text-xl font-semibold" :class="goalCapacityRsd >= 0 ? 'text-positive' : 'text-negative'">
+                {{ formatCurrency(goalCapacityRsd) }}
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <article v-for="goal in activeGoals" :key="goal.id" class="panel-soft p-4">
+              <div class="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <div class="font-medium">{{ goal.name }}</div>
+                  <div class="muted text-sm mt-1">{{ goal.target_month_label || 'Bez roka' }} · {{ goal.projected_completion_label || 'Nema forecast-a' }}</div>
+                </div>
+                <div class="text-right">
+                  <div class="font-semibold">{{ goal.progress_percent.toFixed(1) }}%</div>
+                  <div class="muted text-xs mt-1">{{ formatCurrency(goal.saved_amount_rsd) }} / {{ formatCurrency(goal.target_amount_rsd) }}</div>
+                </div>
+              </div>
+              <div class="progress-track mt-3">
+                <div class="progress-fill" :style="{ width: `${Math.min(goal.progress_percent, 100)}%` }"></div>
+              </div>
+              <div class="grid gap-3 mt-3 md:grid-cols-3 text-sm">
+                <div>
+                  <div class="muted">Plan mesečno</div>
+                  <div class="mt-1 font-medium">{{ formatCurrency(goal.monthly_contribution_goal_rsd) }}</div>
+                </div>
+                <div>
+                  <div class="muted">Potrebno mesečno</div>
+                  <div class="mt-1 font-medium">{{ goal.required_monthly_rsd ? formatCurrency(goal.required_monthly_rsd) : 'Nije zadato' }}</div>
+                </div>
+                <div>
+                  <div class="muted">Status</div>
+                  <div class="mt-1">
+                    <span
+                      class="status-pill"
+                      :class="goal.target_date ? (goal.is_on_track ? 'status-pill-warning' : 'status-pill-danger') : 'status-pill-neutral'"
+                    >
+                      {{ goal.target_date ? (goal.is_on_track ? 'U planu' : 'Kasni za planom') : 'Bez roka' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </article>
+            <div v-if="!activeGoals.length" class="panel-soft p-4">
+              <p class="muted text-sm">Još nema aktivnih ciljeva. Dodaj ih na stranici Ciljevi.</p>
             </div>
           </div>
         </div>
@@ -303,6 +369,16 @@ const analytics = reactive({
 });
 const selectedExpenseCategories = ref([]);
 const selectedIncomeSources = ref([]);
+const goalsSummary = reactive({
+  total_target_rsd: 0,
+  total_saved_rsd: 0,
+  total_remaining_rsd: 0,
+  monthly_goal_commitment_rsd: 0,
+  projected_monthly_savings_rsd: 0,
+  unallocated_monthly_savings_rsd: 0,
+  active_goals_count: 0,
+});
+const goals = ref([]);
 
 function currentMonthKey() {
   const now = new Date();
@@ -323,7 +399,7 @@ function formatDate(value) {
 }
 
 function statusClass(item) {
-  return item.is_paid ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700';
+  return item.is_paid ? 'status-pill-positive' : 'status-pill-warning';
 }
 
 function applyCapabilities(nextCapabilities = {}) {
@@ -435,6 +511,9 @@ const analyticsSummary = computed(() =>
   ),
 );
 
+const activeGoals = computed(() => goals.value.filter((goal) => !goal.is_completed).slice(0, 4));
+const goalCapacityRsd = computed(() => Number((snapshot.projected_savings_rsd - goalsSummary.monthly_goal_commitment_rsd).toFixed(2)));
+
 async function fetchSnapshot() {
   loading.value = true;
   error.value = '';
@@ -488,10 +567,28 @@ async function fetchAnalytics() {
   }
 }
 
+async function fetchGoals() {
+  try {
+    const { data } = await api.get('/api/ciljevi');
+    goals.value = data.goals || [];
+    Object.assign(goalsSummary, {
+      total_target_rsd: data.summary?.total_target_rsd || 0,
+      total_saved_rsd: data.summary?.total_saved_rsd || 0,
+      total_remaining_rsd: data.summary?.total_remaining_rsd || 0,
+      monthly_goal_commitment_rsd: data.summary?.monthly_goal_commitment_rsd || 0,
+      projected_monthly_savings_rsd: data.summary?.projected_monthly_savings_rsd || 0,
+      unallocated_monthly_savings_rsd: data.summary?.unallocated_monthly_savings_rsd || 0,
+      active_goals_count: data.summary?.active_goals_count || 0,
+    });
+  } catch {
+    // Snapshot remains usable even if goals are unavailable.
+  }
+}
+
 watch(snapshotMonth, fetchSnapshot);
 watch(analyticsMonths, fetchAnalytics);
 
 onMounted(async () => {
-  await Promise.all([fetchSnapshot(), fetchAnalytics()]);
+  await Promise.all([fetchSnapshot(), fetchAnalytics(), fetchGoals()]);
 });
 </script>

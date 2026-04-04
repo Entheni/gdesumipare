@@ -25,6 +25,7 @@ test('getTierCapabilities exposes correct feature flags', () => {
     can_use_advanced_charts: false,
     can_use_exports: false,
     can_use_household_features: false,
+    max_savings_goals: 1,
   });
 
   assert.deepEqual(getTierCapabilities('plus'), {
@@ -34,6 +35,7 @@ test('getTierCapabilities exposes correct feature flags', () => {
     can_use_advanced_charts: true,
     can_use_exports: true,
     can_use_household_features: false,
+    max_savings_goals: null,
   });
 
   assert.deepEqual(getTierCapabilities('family'), {
@@ -43,5 +45,6 @@ test('getTierCapabilities exposes correct feature flags', () => {
     can_use_advanced_charts: true,
     can_use_exports: true,
     can_use_household_features: true,
+    max_savings_goals: null,
   });
 });

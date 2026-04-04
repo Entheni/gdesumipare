@@ -96,9 +96,9 @@
           </button>
         </div>
 
-        <p v-if="success" class="text-sm text-emerald-600">{{ success }}</p>
-        <p v-if="runResult" class="text-sm text-blue-600">{{ runResult }}</p>
-        <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
+        <p v-if="success" class="message-success">{{ success }}</p>
+        <p v-if="runResult" class="message-info">{{ runResult }}</p>
+        <p v-if="error" class="message-danger">{{ error }}</p>
       </form>
 
       <form v-if="activeTab === 'paket'" @submit.prevent="savePlan" class="space-y-6">
@@ -147,8 +147,8 @@
           </section>
         </div>
 
-        <p v-if="success" class="text-sm text-emerald-600">{{ success }}</p>
-        <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
+        <p v-if="success" class="message-success">{{ success }}</p>
+        <p v-if="error" class="message-danger">{{ error }}</p>
       </form>
 
       <form v-if="activeTab === 'izgled'" @submit.prevent="saveSettings" class="space-y-6">
@@ -170,8 +170,8 @@
           </button>
         </div>
 
-        <p v-if="success" class="text-sm text-emerald-600">{{ success }}</p>
-        <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
+        <p v-if="success" class="message-success">{{ success }}</p>
+        <p v-if="error" class="message-danger">{{ error }}</p>
       </form>
     </div>
   </div>
@@ -207,6 +207,7 @@ const capabilities = reactive({
   can_use_advanced_charts: false,
   can_use_exports: false,
   can_use_household_features: false,
+  max_savings_goals: 1,
 });
 const plans = [
   {
@@ -236,6 +237,12 @@ const runResult = ref('');
 const activeTab = ref('profil');
 
 const capabilityList = computed(() => [
+  {
+    key: 'goals',
+    title: 'Kapacitet ciljeva štednje',
+    description: capabilities.max_savings_goals === 1 ? 'Jedan aktivan cilj na Free nivou.' : 'Više aktivnih ciljeva i forecast po cilju.',
+    enabled: true,
+  },
   {
     key: 'snapshot',
     title: 'Istorija snapshot-a',
@@ -270,6 +277,7 @@ function applyCapabilities(nextCapabilities = {}) {
     can_use_advanced_charts: !!nextCapabilities.can_use_advanced_charts,
     can_use_exports: !!nextCapabilities.can_use_exports,
     can_use_household_features: !!nextCapabilities.can_use_household_features,
+    max_savings_goals: nextCapabilities.max_savings_goals ?? 1,
   });
 }
 

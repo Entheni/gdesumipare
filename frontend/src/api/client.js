@@ -1,8 +1,30 @@
 import axios from 'axios';
+import { Capacitor } from '@capacitor/core';
 import { clearStoredToken, setStoredToken, authToken } from '../auth/session.js';
 
+function resolveApiBaseUrl() {
+  if (import.meta.env.VITE_API_BASE) {
+    return import.meta.env.VITE_API_BASE;
+  }
+
+  if (!Capacitor.isNativePlatform()) {
+    return '';
+  }
+
+  const platform = Capacitor.getPlatform();
+  if (platform === 'android') {
+    return 'http://10.0.2.2:5000';
+  }
+
+  if (platform === 'ios') {
+    return 'http://localhost:5000';
+  }
+
+  return '';
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE || '',
+  baseURL: resolveApiBaseUrl(),
 });
 
 export function setAuthToken(token) {
