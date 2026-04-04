@@ -16,6 +16,7 @@
       <p v-if="error" class="text-red-600 text-sm">{{ error }}</p>
     </form>
     <p class="text-sm mt-4">Nemate nalog? <router-link to="/registracija" class="text-blue-700">Registrujte se</router-link></p>
+    <p class="text-sm mt-2">Želite da vidite pakete? <router-link to="/paketi" class="text-blue-700">Pogledajte poređenje</router-link></p>
   </div>
 </template>
 

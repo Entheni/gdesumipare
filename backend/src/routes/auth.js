@@ -12,7 +12,7 @@ router.post('/registracija', async (req, res) => {
     const existing = await db('users').where({ email }).first();
     if (existing) return res.status(409).json({ error: 'Email adresa je već zauzeta.' });
     const password_hash = await hashPassword(password);
-    const [user] = await db('users').insert({ email, password_hash }).returning(['id', 'email']);
+    const [user] = await db('users').insert({ email, password_hash }).returning(['id', 'email', 'subscription_tier']);
     res.status(201).json({ user });
   } catch (err) {
     if (err instanceof ValidationError) {
@@ -31,7 +31,7 @@ router.post('/prijava', async (req, res) => {
     const ok = await verifyPassword(password, user.password_hash);
     if (!ok) return res.status(401).json({ error: 'Pogrešan email ili lozinka.' });
     const token = signToken(user.id);
-    res.json({ token, user: { id: user.id, email: user.email } });
+    res.json({ token, user: { id: user.id, email: user.email, subscription_tier: user.subscription_tier || 'free' } });
   } catch (err) {
     if (err instanceof ValidationError) {
       return res.status(400).json({ error: err.message });

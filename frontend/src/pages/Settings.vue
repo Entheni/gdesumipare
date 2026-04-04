@@ -1,11 +1,12 @@
 ﻿<template>
-  <div class="max-w-3xl mx-auto p-6 space-y-6">
+  <div class="max-w-4xl mx-auto p-6 space-y-6">
     <div class="surface-card p-6">
       <div class="flex items-start justify-between gap-4">
         <div>
           <h1 class="text-2xl font-semibold">Podešavanja</h1>
-          <p class="muted mt-2">Kontroliši temu aplikacije i email podsetnike za obaveze koje uskoro dospevaju.</p>
+          <p class="muted mt-2">Profil, bezbednost, podsetnici i paket su razdvojeni po tabovima da ekran ostane pregledan.</p>
         </div>
+        <PlanBadge :tier="form.subscription_tier" />
       </div>
     </div>
 
@@ -14,6 +15,7 @@
         <button type="button" class="tab-chip" :class="{ active: activeTab === 'profil' }" @click="activeTab = 'profil'">Profil</button>
         <button type="button" class="tab-chip" :class="{ active: activeTab === 'bezbednost' }" @click="activeTab = 'bezbednost'">Bezbednost</button>
         <button type="button" class="tab-chip" :class="{ active: activeTab === 'podsetnici' }" @click="activeTab = 'podsetnici'">Podsetnici</button>
+        <button type="button" class="tab-chip" :class="{ active: activeTab === 'paket' }" @click="activeTab = 'paket'">Paket</button>
         <button type="button" class="tab-chip" :class="{ active: activeTab === 'izgled' }" @click="activeTab = 'izgled'">Izgled</button>
       </div>
 
@@ -99,6 +101,56 @@
         <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
       </form>
 
+      <form v-if="activeTab === 'paket'" @submit.prevent="savePlan" class="space-y-6">
+        <div class="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
+          <section class="rounded-3xl border p-5" style="border-color: var(--border)">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 class="text-lg font-semibold">Aktivni paket</h2>
+                <p class="muted text-sm mt-1">Za sada je ovo interni izbor nivoa korisnika, bez payment integracije.</p>
+              </div>
+              <PlanBadge :tier="form.subscription_tier" />
+            </div>
+
+            <div class="mt-5 grid gap-3">
+              <label
+                v-for="plan in plans"
+                :key="plan.value"
+                class="plan-option"
+                :class="{ active: form.subscription_tier === plan.value }"
+              >
+                <input v-model="form.subscription_tier" type="radio" :value="plan.value" class="sr-only" />
+                <div class="font-medium">{{ plan.label }}</div>
+                <div class="muted text-sm mt-1">{{ plan.description }}</div>
+              </label>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3 mt-5">
+              <button :disabled="saving" class="btn-primary">
+                {{ saving ? 'Čuvanje...' : 'Sačuvaj paket' }}
+              </button>
+              <RouterLink to="/paketi" class="btn-secondary">Pogledaj pakete</RouterLink>
+            </div>
+          </section>
+
+          <section class="rounded-3xl border p-5" style="border-color: var(--border)">
+            <h2 class="text-lg font-semibold">Šta je trenutno otključano</h2>
+            <div class="mt-5 space-y-3">
+              <div v-for="item in capabilityList" :key="item.key" class="capability-row" :class="{ disabled: !item.enabled }">
+                <div>
+                  <div class="font-medium">{{ item.title }}</div>
+                  <div class="muted text-sm mt-1">{{ item.description }}</div>
+                </div>
+                <span class="text-sm font-semibold">{{ item.enabled ? 'Dostupno' : 'Zaključano' }}</span>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <p v-if="success" class="text-sm text-emerald-600">{{ success }}</p>
+        <p v-if="error" class="text-sm text-red-600">{{ error }}</p>
+      </form>
+
       <form v-if="activeTab === 'izgled'" @submit.prevent="saveSettings" class="space-y-6">
         <div class="space-y-3">
           <h2 class="text-lg font-semibold">Izgled</h2>
@@ -126,8 +178,10 @@
 </template>
 
 <script setup>
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
+import { RouterLink } from 'vue-router';
 import api from '../api/client.js';
+import PlanBadge from '../components/PlanBadge.vue';
 import { setThemePreference } from '../theme.js';
 
 const form = reactive({
@@ -136,6 +190,7 @@ const form = reactive({
   reminders_enabled: true,
   reminder_days: 3,
   theme_preference: 'system',
+  subscription_tier: 'free',
 });
 const profileForm = reactive({
   email: '',
@@ -145,6 +200,31 @@ const passwordForm = reactive({
   current_password: '',
   new_password: '',
 });
+const capabilities = reactive({
+  tier: 'free',
+  can_use_current_snapshot: true,
+  can_use_snapshot_history: false,
+  can_use_advanced_charts: false,
+  can_use_exports: false,
+  can_use_household_features: false,
+});
+const plans = [
+  {
+    value: 'free',
+    label: 'Free',
+    description: 'Osnovni pregled troskova, prihoda i tekuci snapshot.',
+  },
+  {
+    value: 'plus',
+    label: 'Plus',
+    description: 'Istorija snapshot-a, napredni grafovi i detaljniji filteri.',
+  },
+  {
+    value: 'family',
+    label: 'Family',
+    description: 'Sve iz Plus paketa uz household capability za zajednicki budzet.',
+  },
+];
 
 const saving = ref(false);
 const profileSaving = ref(false);
@@ -155,11 +235,50 @@ const success = ref('');
 const runResult = ref('');
 const activeTab = ref('profil');
 
+const capabilityList = computed(() => [
+  {
+    key: 'snapshot',
+    title: 'Istorija snapshot-a',
+    description: 'Pregled i prethodnih meseci, ne samo tekuceg.',
+    enabled: capabilities.can_use_snapshot_history,
+  },
+  {
+    key: 'charts',
+    title: 'Napredni grafovi i filteri',
+    description: 'Vise meseci, gasenje kategorija i igranje sa prikazima.',
+    enabled: capabilities.can_use_advanced_charts,
+  },
+  {
+    key: 'exports',
+    title: 'Izvoz i izvestaji',
+    description: 'Priprema za PDF i napredni eksport podataka.',
+    enabled: capabilities.can_use_exports,
+  },
+  {
+    key: 'household',
+    title: 'Porodicni i shared pristup',
+    description: 'Capability za buduci zajednicki budzet domacinstva.',
+    enabled: capabilities.can_use_household_features,
+  },
+]);
+
+function applyCapabilities(nextCapabilities = {}) {
+  Object.assign(capabilities, {
+    tier: nextCapabilities.tier || form.subscription_tier || 'free',
+    can_use_current_snapshot: nextCapabilities.can_use_current_snapshot !== false,
+    can_use_snapshot_history: !!nextCapabilities.can_use_snapshot_history,
+    can_use_advanced_charts: !!nextCapabilities.can_use_advanced_charts,
+    can_use_exports: !!nextCapabilities.can_use_exports,
+    can_use_household_features: !!nextCapabilities.can_use_household_features,
+  });
+}
+
 async function loadSettings() {
   error.value = '';
   try {
     const { data } = await api.get('/api/podesavanja');
     Object.assign(form, data.settings);
+    applyCapabilities(data.capabilities);
     Object.assign(profileForm, {
       email: data.settings.email || '',
       display_name: data.settings.display_name || '',
@@ -182,6 +301,7 @@ async function saveSettings() {
     };
     const { data } = await api.put('/api/podesavanja', payload);
     Object.assign(form, data.settings);
+    applyCapabilities(data.capabilities);
     setThemePreference(data.settings.theme_preference);
     success.value = 'Podešavanja su sačuvana.';
   } catch (e) {
@@ -210,6 +330,24 @@ async function saveProfile() {
     error.value = e?.response?.data?.error || 'Greška pri čuvanju profila';
   } finally {
     profileSaving.value = false;
+  }
+}
+
+async function savePlan() {
+  saving.value = true;
+  error.value = '';
+  success.value = '';
+  try {
+    const { data } = await api.put('/api/podesavanja', {
+      subscription_tier: form.subscription_tier,
+    });
+    Object.assign(form, data.settings);
+    applyCapabilities(data.capabilities);
+    success.value = 'Paket je sačuvan.';
+  } catch (e) {
+    error.value = e?.response?.data?.error || 'Greška pri čuvanju paketa';
+  } finally {
+    saving.value = false;
   }
 }
 

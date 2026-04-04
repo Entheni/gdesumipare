@@ -3,6 +3,7 @@ import db from '../db/knex.js';
 import { requireAuth } from '../utils/auth.js';
 import { buildOverview, formatDateOnly, getDaysUntilDue, getMonthlyAmount, parseDateOnly } from '../utils/billing.js';
 import { logError } from '../utils/logger.js';
+import { getTierCapabilities } from '../utils/plans.js';
 
 const router = Router();
 
@@ -110,6 +111,22 @@ function getIncomeMonthlyAmount(income) {
   return amount;
 }
 
+function normalizeMonthsParam(value) {
+  const months = Number(value);
+  if (!Number.isInteger(months) || months < 1) return 1;
+  return Math.min(months, 12);
+}
+
+function getBillAmountForMonth(bill, monthInfo) {
+  const dueDate = getBillSnapshotDate(bill, monthInfo);
+  return dueDate ? Number(Number(bill.amount_rsd || 0).toFixed(2)) : 0;
+}
+
+function getIncomeAmountForMonth(income, monthInfo) {
+  const incomeDate = getIncomeSnapshotDate(income, monthInfo);
+  return incomeDate ? Number(Number(income.amount_rsd || 0).toFixed(2)) : 0;
+}
+
 router.get('/mesecno', requireAuth, async (req, res) => {
   try {
     const bills = await db('bills').where({ user_id: req.userId });
@@ -199,9 +216,15 @@ router.get('/trendovi', requireAuth, async (req, res) => {
 
 router.get('/snapshot', requireAuth, async (req, res) => {
   try {
+    const user = await db('users').select('subscription_tier').where({ id: req.userId }).first();
+    const capabilities = getTierCapabilities(user?.subscription_tier);
     const requestedMonth = parseMonthParam(req.query.month);
     if (!requestedMonth) {
       return res.status(400).json({ error: 'Parametar month mora biti u formatu YYYY-MM.' });
+    }
+    const currentMonthKey = formatMonthKey(new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), 1)));
+    if (!capabilities.can_use_snapshot_history && requestedMonth.key !== currentMonthKey) {
+      return res.status(403).json({ error: 'Istorija snapshot pregleda je dostupna od Plus paketa.' });
     }
 
     const monthRange = buildMonthRange(requestedMonth);
@@ -278,6 +301,7 @@ router.get('/snapshot', requireAuth, async (req, res) => {
     const paidBillsCount = dueBills.filter((bill) => bill.is_paid).length;
 
     res.json({
+      capabilities,
       month: requestedMonth.key,
       month_label: monthLabel,
       planned_income_rsd: plannedIncomeRsd,
@@ -295,6 +319,87 @@ router.get('/snapshot', requireAuth, async (req, res) => {
   } catch (err) {
     logError('Neuspesno ucitavanje snapshot pregleda.', err, { ruta: 'statistika/snapshot', userId: req.userId });
     res.status(500).json({ error: 'Neuspesno ucitavanje snapshot pregleda.' });
+  }
+});
+
+router.get('/analitika', requireAuth, async (req, res) => {
+  try {
+    const user = await db('users').select('subscription_tier').where({ id: req.userId }).first();
+    const capabilities = getTierCapabilities(user?.subscription_tier);
+    const monthsCount = capabilities.can_use_advanced_charts ? normalizeMonthsParam(req.query.months) : 1;
+    const months = createLastMonths(monthsCount);
+    const monthInfos = months.map((month) => parseMonthParam(month.key));
+
+    const [bills, incomes] = await Promise.all([
+      db('bills').where({ user_id: req.userId }).orderBy('created_at', 'desc'),
+      db('incomes').where({ user_id: req.userId }).orderBy('created_at', 'desc'),
+    ]);
+
+    const expenseCategorySet = new Set();
+    const incomeSourceSet = new Set();
+
+    const expenseSeriesByCategory = new Map();
+    const incomeSeriesBySource = new Map();
+    const monthlyTotals = months.map((month, index) => {
+      const monthInfo = monthInfos[index];
+      let incomeRsd = 0;
+      let expenseRsd = 0;
+
+      for (const bill of bills) {
+        const category = bill.category || 'Ostalo';
+        const amount = getBillAmountForMonth(bill, monthInfo);
+        if (!amount) continue;
+        expenseCategorySet.add(category);
+        if (!expenseSeriesByCategory.has(category)) {
+          expenseSeriesByCategory.set(category, months.map((item) => ({ key: item.key, label: item.label, total_rsd: 0 })));
+        }
+        expenseSeriesByCategory.get(category)[index].total_rsd = Number(amount.toFixed(2));
+        expenseRsd += amount;
+      }
+
+      for (const income of incomes) {
+        const source = income.name || 'Prihod';
+        const amount = getIncomeAmountForMonth(income, monthInfo);
+        if (!amount) continue;
+        incomeSourceSet.add(source);
+        if (!incomeSeriesBySource.has(source)) {
+          incomeSeriesBySource.set(source, months.map((item) => ({ key: item.key, label: item.label, total_rsd: 0 })));
+        }
+        incomeSeriesBySource.get(source)[index].total_rsd = Number(amount.toFixed(2));
+        incomeRsd += amount;
+      }
+
+      return {
+        key: month.key,
+        label: month.label,
+        income_rsd: Number(incomeRsd.toFixed(2)),
+        expense_rsd: Number(expenseRsd.toFixed(2)),
+        savings_rsd: Number((incomeRsd - expenseRsd).toFixed(2)),
+      };
+    });
+
+    const latestMonth = monthlyTotals[monthlyTotals.length - 1] || { income_rsd: 0, expense_rsd: 0, savings_rsd: 0 };
+    const expenseBreakdown = [...expenseSeriesByCategory.entries()]
+      .map(([category, values]) => ({
+        category,
+        total_rsd: Number(values.reduce((sum, item) => sum + Number(item.total_rsd || 0), 0).toFixed(2)),
+      }))
+      .sort((left, right) => right.total_rsd - left.total_rsd);
+
+    res.json({
+      capabilities,
+      months: monthsCount,
+      available_expense_categories: [...expenseCategorySet].sort((left, right) => left.localeCompare(right)),
+      available_income_sources: [...incomeSourceSet].sort((left, right) => left.localeCompare(right)),
+      monthly_totals: monthlyTotals,
+      expense_breakdown: expenseBreakdown,
+      expense_series_by_category: Object.fromEntries(expenseSeriesByCategory),
+      income_series_by_source: Object.fromEntries(incomeSeriesBySource),
+      latest_month: latestMonth,
+    });
+  } catch (err) {
+    logError('Neuspesno ucitavanje analitike.', err, { ruta: 'statistika/analitika', userId: req.userId });
+    res.status(500).json({ error: 'Neuspesno ucitavanje analitike.' });
   }
 });
 

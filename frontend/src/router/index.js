@@ -3,6 +3,7 @@ import { authToken, isTokenValid } from '../auth/session.js';
 
 const Login = () => import('../pages/Login.vue');
 const Register = () => import('../pages/Register.vue');
+const Pricing = () => import('../pages/Pricing.vue');
 const Overview = () => import('../pages/Overview.vue');
 const Snapshot = () => import('../pages/Snapshot.vue');
 const Bills = () => import('../pages/Bills.vue');
@@ -14,6 +15,7 @@ const routes = [
   { path: '/', redirect: '/pregled' },
   { path: '/prijava', component: Login, meta: { public: true } },
   { path: '/registracija', component: Register, meta: { public: true } },
+  { path: '/paketi', component: Pricing, meta: { public: true } },
   { path: '/pregled', component: Overview, meta: { requiresAuth: true } },
   { path: '/snapshot', component: Snapshot, meta: { requiresAuth: true } },
   { path: '/obaveze', component: Bills, meta: { requiresAuth: true } },
@@ -23,6 +25,7 @@ const routes = [
   { path: '/podesavanja', component: Settings, meta: { requiresAuth: true } },
   { path: '/login', redirect: '/prijava' },
   { path: '/register', redirect: '/registracija' },
+  { path: '/pricing', redirect: '/paketi' },
   { path: '/dashboard', redirect: '/pregled' },
   { path: '/snapshot-view', redirect: '/snapshot' },
   { path: '/bills', redirect: '/obaveze' },

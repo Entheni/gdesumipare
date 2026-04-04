@@ -1,4 +1,4 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -143,6 +143,12 @@ a {
   gap: 0.75rem;
 }
 
+.analytics-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+}
+
 .tab-chip {
   border-radius: 9999px;
   border: 1px solid var(--border);
@@ -156,6 +162,116 @@ a {
   background: var(--primary);
   border-color: var(--primary);
   color: white;
+}
+
+.tab-chip:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.analytics-chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.filter-chip,
+.plan-option {
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--panel-strong);
+  transition: border-color 120ms ease, background-color 120ms ease, opacity 120ms ease;
+}
+
+.filter-chip {
+  padding: 0.7rem 0.95rem;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.filter-chip.active {
+  background: color-mix(in srgb, var(--primary) 12%, var(--panel-strong));
+  border-color: color-mix(in srgb, var(--primary) 46%, var(--border));
+  color: var(--text);
+}
+
+.filter-chip.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pricing-card-highlight {
+  position: relative;
+  border-color: color-mix(in srgb, var(--primary) 50%, var(--border));
+  box-shadow: 0 18px 44px rgba(15, 118, 110, 0.15);
+}
+
+.pricing-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
+  color: var(--primary-strong);
+  padding: 0.35rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.plan-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.plan-badge-free {
+  background: rgba(148, 163, 184, 0.16);
+  color: var(--text);
+}
+
+.plan-badge-plus {
+  background: color-mix(in srgb, var(--primary) 18%, transparent);
+  color: var(--primary-strong);
+}
+
+.plan-badge-family {
+  background: rgba(37, 99, 235, 0.14);
+  color: #1d4ed8;
+}
+
+.upgrade-hint {
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 9%, var(--panel-strong)), var(--panel-strong));
+}
+
+.plan-option {
+  display: block;
+  padding: 1rem;
+  cursor: pointer;
+}
+
+.plan-option.active {
+  border-color: color-mix(in srgb, var(--primary) 46%, var(--border));
+  background: color-mix(in srgb, var(--primary) 8%, var(--panel-strong));
+}
+
+.capability-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 0.9rem 1rem;
+  background: var(--panel-strong);
+}
+
+.capability-row.disabled {
+  opacity: 0.72;
 }
 
 .muted {

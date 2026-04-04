@@ -4,6 +4,7 @@
       <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-4">
           <router-link to="/pregled" class="text-lg font-semibold tracking-tight">GdeSuMiPare</router-link>
+          <router-link v-if="!isAuthed" to="/paketi" class="nav-link">Paketi</router-link>
           <template v-if="isAuthed">
             <router-link to="/pregled" class="nav-link">Pregled</router-link>
             <router-link to="/snapshot" class="nav-link">Snapshot</router-link>

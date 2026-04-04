@@ -3,11 +3,12 @@ import db from '../db/knex.js';
 import { hashPassword, requireAuth, verifyPassword } from '../utils/auth.js';
 import { ValidationError, normalizeEmail, normalizePassword } from '../utils/validation.js';
 import { logError, sanitizeBody } from '../utils/logger.js';
+import { getTierCapabilities, normalizeSubscriptionTier } from '../utils/plans.js';
 
 const router = Router();
 
 function normalizeSettingsPayload(payload = {}, { partial = false } = {}) {
-  const allowedFields = ['reminders_enabled', 'reminder_days', 'theme_preference'];
+  const allowedFields = ['reminders_enabled', 'reminder_days', 'theme_preference', 'subscription_tier'];
   const unknownFields = Object.keys(payload).filter((field) => !allowedFields.includes(field));
 
   if (unknownFields.length > 0) {
@@ -36,6 +37,10 @@ function normalizeSettingsPayload(payload = {}, { partial = false } = {}) {
       throw new ValidationError('Tema mora biti system, light ili dark.');
     }
     settings.theme_preference = payload.theme_preference;
+  }
+
+  if (!partial || Object.hasOwn(payload, 'subscription_tier')) {
+    settings.subscription_tier = normalizeSubscriptionTier(payload.subscription_tier);
   }
 
   if (partial && Object.keys(settings).length === 0) {
@@ -99,7 +104,7 @@ function normalizePasswordPayload(payload = {}) {
 router.get('/', requireAuth, async (req, res) => {
   try {
     const user = await db('users')
-      .select('email', 'display_name', 'reminders_enabled', 'reminder_days', 'theme_preference')
+      .select('email', 'display_name', 'reminders_enabled', 'reminder_days', 'theme_preference', 'subscription_tier')
       .where({ id: req.userId })
       .first();
 
@@ -110,7 +115,9 @@ router.get('/', requireAuth, async (req, res) => {
         reminders_enabled: true,
         reminder_days: 3,
         theme_preference: 'system',
+        subscription_tier: 'free',
       },
+      capabilities: getTierCapabilities(user?.subscription_tier),
     });
   } catch (err) {
     logError('Neuspešno učitavanje podešavanja.', err, { ruta: 'podesavanja', userId: req.userId });
@@ -136,7 +143,7 @@ router.put('/profil', requireAuth, async (req, res) => {
     const [user] = await db('users')
       .where({ id: req.userId })
       .update(profile)
-      .returning(['email', 'display_name', 'reminders_enabled', 'reminder_days', 'theme_preference']);
+      .returning(['email', 'display_name', 'reminders_enabled', 'reminder_days', 'theme_preference', 'subscription_tier']);
 
     res.json({ settings: user });
   } catch (err) {
@@ -180,9 +187,9 @@ router.put('/', requireAuth, async (req, res) => {
     const [user] = await db('users')
       .where({ id: req.userId })
       .update(settings)
-      .returning(['reminders_enabled', 'reminder_days', 'theme_preference']);
+      .returning(['reminders_enabled', 'reminder_days', 'theme_preference', 'subscription_tier']);
 
-    res.json({ settings: user });
+    res.json({ settings: user, capabilities: getTierCapabilities(user?.subscription_tier) });
   } catch (err) {
     if (err instanceof ValidationError) {
       return res.status(400).json({ error: err.message });
