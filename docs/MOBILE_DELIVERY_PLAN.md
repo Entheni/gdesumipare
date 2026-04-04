@@ -1,10 +1,28 @@
-﻿# Mobile Delivery Plan
+# Mobile Delivery Plan
+
+## Status
+- web aplikacija ostaje glavni proizvod
+- Capacitor scaffold je uveden u `frontend/`
+- iOS projekat postoji u `frontend/ios/`
+- Android projekat postoji u `frontend/android/`
+- `npm run mobile:sync` sada osvezava native projekte iz aktuelnog web build-a
 
 ## Cilj
 Web ostaje glavni proizvod. Mobilna aplikacija ide paralelno, za korisnike koji vise vole telefon nego browser.
 
 ## Pravac
 Ne radimo rewrite. Postojeci Vue frontend ostaje osnova, a mobilne aplikacije se uvode preko `Capacitor`-a.
+
+## Pravilo za dalje feature-e
+Svaki novi feature od ovog trenutka mora da se dizajnira i proveri kroz 3 kanala:
+- web browser
+- Android aplikacija
+- iOS aplikacija
+
+To ne znaci da svaki feature mora odmah imati native-only implementaciju, ali mora imati:
+- ispravan responsive UI
+- ispravan API tok u web i mobile shell-u
+- proveru da navigacija, forma i auth/session ponasanje ne pucaju na telefonu
 
 ## Faza 1: Web spreman za mobilni wrapper
 - dodatno ciscenje navigacije za uske ekrane

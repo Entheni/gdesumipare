@@ -1,0 +1,8 @@
+{
+  "appId": "rs.gdesumipare.app",
+  "appName": "GdeSuMiPare",
+  "webDir": "dist",
+  "server": {
+    "cleartext": true
+  }
+}
