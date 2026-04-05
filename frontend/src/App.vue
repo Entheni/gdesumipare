@@ -8,6 +8,7 @@
           <template v-if="isAuthed">
             <router-link to="/pregled" class="nav-link">Pregled</router-link>
             <router-link to="/snapshot" class="nav-link">Snapshot</router-link>
+            <router-link to="/plan" class="nav-link">Plan</router-link>
             <router-link to="/ciljevi" class="nav-link">Ciljevi</router-link>
             <router-link to="/obaveze" class="nav-link">Obaveze</router-link>
             <router-link to="/prihodi" class="nav-link">Prihodi</router-link>

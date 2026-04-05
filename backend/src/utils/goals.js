@@ -65,7 +65,7 @@ export function buildGoalProjection(goal, contributions = [], { referenceDate = 
   let projectedCompletionLabel = null;
   if (remainingAmount === 0) {
     projectedCompletionMonth = formatDateOnly(currentMonthStart(referenceDate));
-    projectedCompletionLabel = 'Cilj je već ostvaren';
+    projectedCompletionLabel = 'Cilj je vec ostvaren';
   } else if (monthlyProjection > 0) {
     const monthsToGoal = Math.ceil(remainingAmount / monthlyProjection);
     const projectedDate = addMonths(currentMonthStart(referenceDate), Math.max(monthsToGoal - 1, 0));
@@ -157,3 +157,4 @@ export function buildGoalsSummary(goals = [], contributions = [], { projectedMon
     }),
   };
 }
+

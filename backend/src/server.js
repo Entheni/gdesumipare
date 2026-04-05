@@ -9,6 +9,8 @@ import remindersRoutes from './routes/reminders.js';
 import settingsRoutes from './routes/settings.js';
 import statsRoutes from './routes/stats.js';
 import goalsRoutes from './routes/goals.js';
+import budgetsRoutes from './routes/budgets.js';
+import planningRoutes from './routes/planning.js';
 import { logInfo } from './utils/logger.js';
 
 const app = express();
@@ -35,6 +37,8 @@ app.use('/api/podsetnici', remindersRoutes);
 app.use('/api/podesavanja', settingsRoutes);
 app.use('/api/statistika', statsRoutes);
 app.use('/api/ciljevi', goalsRoutes);
+app.use('/api/budzeti', budgetsRoutes);
+app.use('/api/plan', planningRoutes);
 
 // Legacy aliases
 app.use('/api/auth', authRoutes);
@@ -44,6 +48,8 @@ app.use('/api/reminders', remindersRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/goals', goalsRoutes);
+app.use('/api/budgets', budgetsRoutes);
+app.use('/api/planning', planningRoutes);
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', servis: 'gdesumipare-api' });
 });

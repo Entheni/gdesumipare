@@ -4,6 +4,8 @@ import { requireAuth } from '../utils/auth.js';
 import { buildOverview, formatDateOnly, getDaysUntilDue, getMonthlyAmount, parseDateOnly } from '../utils/billing.js';
 import { logError } from '../utils/logger.js';
 import { getTierCapabilities } from '../utils/plans.js';
+import { buildBudgetSummary } from '../utils/budgets.js';
+import { buildGoalsSummary } from '../utils/goals.js';
 
 const router = Router();
 
@@ -400,6 +402,108 @@ router.get('/analitika', requireAuth, async (req, res) => {
   } catch (err) {
     logError('Neuspesno ucitavanje analitike.', err, { ruta: 'statistika/analitika', userId: req.userId });
     res.status(500).json({ error: 'Neuspesno ucitavanje analitike.' });
+  }
+});
+
+router.get('/signali', requireAuth, async (req, res) => {
+  try {
+    const [bills, incomes, budgetTargets, goals, contributions] = await Promise.all([
+      db('bills').where({ user_id: req.userId }).orderBy('created_at', 'desc'),
+      db('incomes').where({ user_id: req.userId }).orderBy('created_at', 'desc'),
+      db('budget_targets').where({ user_id: req.userId }),
+      db('savings_goals').where({ user_id: req.userId, is_archived: false }),
+      db('goal_contributions').where({ user_id: req.userId }),
+    ]);
+
+    const overview = buildOverview(bills);
+    const monthlyIncomeRsd = Number(incomes.reduce((sum, income) => sum + getIncomeMonthlyAmount(income), 0).toFixed(2));
+    const projectedSavingsRsd = Number((monthlyIncomeRsd - overview.total_monthly_rsd).toFixed(2));
+    const budgetSummary = buildBudgetSummary(budgetTargets, bills);
+    const goalsSummary = buildGoalsSummary(goals, contributions, { projectedMonthlySavingsRsd: projectedSavingsRsd });
+    const upcomingSoon = overview.upcoming_bills.filter((bill) => bill.days_until_due != null && bill.days_until_due <= 7);
+
+    const signals = [];
+
+    if (overview.overdue_bills_count > 0) {
+      signals.push({
+        id: 'overdue',
+        severity: 'danger',
+        title: `Kasni ${overview.overdue_bills_count} obaveza`,
+        description: 'Prvo zatvori kasnjenja da troskovi ne krenu da se gomilaju.',
+        action_label: 'Idi na obaveze',
+        action_to: '/obaveze',
+      });
+    }
+
+    if (projectedSavingsRsd < 0) {
+      signals.push({
+        id: 'negative-savings',
+        severity: 'danger',
+        title: 'Mesec ti trenutno ide u minus',
+        description: `Projekcija je ${projectedSavingsRsd.toFixed(2)} RSD. Proveri troskove, budzete ili prihode.`,
+        action_label: 'Otvori snapshot',
+        action_to: '/snapshot',
+      });
+    }
+
+    if (budgetSummary.total.is_over_limit) {
+      signals.push({
+        id: 'budget-total',
+        severity: 'warning',
+        title: 'Presao si ukupni mesecni budzet',
+        description: `Planirano ${budgetSummary.total.monthly_limit_rsd?.toFixed(2)} RSD, trenutno ${budgetSummary.total.spent_rsd.toFixed(2)} RSD.`,
+        action_label: 'Otvori plan',
+        action_to: '/plan',
+      });
+    } else if (budgetSummary.over_limit_categories.length > 0) {
+      const category = budgetSummary.over_limit_categories[0];
+      signals.push({
+        id: 'budget-category',
+        severity: 'warning',
+        title: `Kategorija "${category.category}" je preko plana`,
+        description: `Limit ${category.monthly_limit_rsd?.toFixed(2)} RSD, trosak ${category.spent_rsd.toFixed(2)} RSD.`,
+        action_label: 'Pogledaj budzete',
+        action_to: '/plan',
+      });
+    }
+
+    if (goalsSummary.summary.active_goals_count > 0 && goalsSummary.summary.on_track_goals_count < goalsSummary.summary.active_goals_count) {
+      signals.push({
+        id: 'goals-off-track',
+        severity: 'info',
+        title: 'Bar jedan cilj stednje kasni za planom',
+        description: 'Promeni tempo uplate ili forecast u simulatoru pre nego sto cilj ode previse daleko.',
+        action_label: 'Otvori ciljeve',
+        action_to: '/ciljevi',
+      });
+    }
+
+    if (upcomingSoon.length > 0) {
+      const nextBill = upcomingSoon[0];
+      signals.push({
+        id: 'upcoming',
+        severity: 'neutral',
+        title: `Uskoro stize ${nextBill.name}`,
+        description: `${nextBill.amount_rsd} RSD za ${Math.max(nextBill.days_until_due, 0)} dana.`,
+        action_label: 'Idi na pregled',
+        action_to: '/pregled',
+      });
+    }
+
+    res.json({
+      summary: {
+        monthly_income_rsd: monthlyIncomeRsd,
+        projected_savings_rsd: projectedSavingsRsd,
+        overdue_bills_count: overview.overdue_bills_count,
+        upcoming_soon_count: upcomingSoon.length,
+        over_budget_categories_count: budgetSummary.over_limit_categories.length,
+        goals_off_track_count: Math.max(goalsSummary.summary.active_goals_count - goalsSummary.summary.on_track_goals_count, 0),
+      },
+      signals: signals.slice(0, 5),
+    });
+  } catch (err) {
+    logError('Neuspesno ucitavanje pametnih signala.', err, { ruta: 'statistika/signali', userId: req.userId });
+    res.status(500).json({ error: 'Neuspesno ucitavanje pametnih signala.' });
   }
 });
 

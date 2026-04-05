@@ -6,6 +6,7 @@ const Register = () => import('../pages/Register.vue');
 const Pricing = () => import('../pages/Pricing.vue');
 const Overview = () => import('../pages/Overview.vue');
 const Snapshot = () => import('../pages/Snapshot.vue');
+const Plan = () => import('../pages/Plan.vue');
 const Goals = () => import('../pages/Goals.vue');
 const Bills = () => import('../pages/Bills.vue');
 const Incomes = () => import('../pages/Incomes.vue');
@@ -21,6 +22,7 @@ const routes = [
   { path: '/preview-teme', component: ThemePreview, meta: { requiresAuth: true } },
   { path: '/pregled', component: Overview, meta: { requiresAuth: true } },
   { path: '/snapshot', component: Snapshot, meta: { requiresAuth: true } },
+  { path: '/plan', component: Plan, meta: { requiresAuth: true } },
   { path: '/ciljevi', component: Goals, meta: { requiresAuth: true } },
   { path: '/obaveze', component: Bills, meta: { requiresAuth: true } },
   { path: '/prihodi', component: Incomes, meta: { requiresAuth: true } },
@@ -32,6 +34,7 @@ const routes = [
   { path: '/pricing', redirect: '/paketi' },
   { path: '/dashboard', redirect: '/pregled' },
   { path: '/snapshot-view', redirect: '/snapshot' },
+  { path: '/planiranje', redirect: '/plan' },
   { path: '/goals', redirect: '/ciljevi' },
   { path: '/bills', redirect: '/obaveze' },
   { path: '/incomes', redirect: '/prihodi' },
