@@ -7,6 +7,10 @@ import { getTierCapabilities, normalizeSubscriptionTier } from '../utils/plans.j
 
 const router = Router();
 
+function normalizeThemePreference(value) {
+  return value === 'dark' ? 'dark' : 'light';
+}
+
 function normalizeSettingsPayload(payload = {}, { partial = false } = {}) {
   const allowedFields = ['reminders_enabled', 'reminder_days', 'theme_preference', 'subscription_tier'];
   const unknownFields = Object.keys(payload).filter((field) => !allowedFields.includes(field));
@@ -109,12 +113,14 @@ router.get('/', requireAuth, async (req, res) => {
       .first();
 
     res.json({
-      settings: user || {
+      settings: user
+        ? { ...user, theme_preference: normalizeThemePreference(user.theme_preference) }
+        : {
         email: '',
         display_name: null,
         reminders_enabled: true,
         reminder_days: 3,
-        theme_preference: 'system',
+        theme_preference: 'light',
         subscription_tier: 'free',
       },
       capabilities: getTierCapabilities(user?.subscription_tier),
@@ -189,7 +195,10 @@ router.put('/', requireAuth, async (req, res) => {
       .update(settings)
       .returning(['reminders_enabled', 'reminder_days', 'theme_preference', 'subscription_tier']);
 
-    res.json({ settings: user, capabilities: getTierCapabilities(user?.subscription_tier) });
+    res.json({
+      settings: { ...user, theme_preference: normalizeThemePreference(user?.theme_preference) },
+      capabilities: getTierCapabilities(user?.subscription_tier),
+    });
   } catch (err) {
     if (err instanceof ValidationError) {
       return res.status(400).json({ error: err.message });

@@ -2,31 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --bg: #f8fbfc;
-  --bg-accent: #edf3f6;
+body {
+  --bg: #fcfeff;
+  --bg-accent: #f4f8fb;
   --bg-accent-strong: #ffffff;
-  --panel: rgba(255, 255, 255, 0.96);
+  --panel: rgba(255, 255, 255, 0.985);
   --panel-strong: #ffffff;
-  --panel-soft: #fbfdfe;
+  --panel-soft: #fdfefe;
   --text: #182330;
-  --muted: #657588;
-  --border: #dce5ec;
-  --border-strong: #cad7e0;
+  --muted: #66788c;
+  --border: #e3ebf1;
+  --border-strong: #d3dfe7;
   --primary: #3f6793;
   --primary-strong: #2f5076;
   --accent: #5a8b78;
   --accent-strong: #456d5d;
-  --warning: #7c8ea6;
-  --warning-soft: #eef3f7;
+  --warning: #7e91aa;
+  --warning-soft: #f3f6f9;
   --danger: #b65f73;
-  --danger-soft: #f7edf1;
-  --success-soft: #edf7f2;
-  --info-soft: #eef4f9;
-  --shadow: 0 22px 52px rgba(22, 34, 48, 0.06);
+  --danger-soft: #f9f1f4;
+  --success-soft: #f1f8f4;
+  --info-soft: #f2f7fb;
+  --shadow: 0 22px 52px rgba(22, 34, 48, 0.045);
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at top left, var(--bg-accent), transparent 28%),
+    radial-gradient(circle at top right, var(--bg-accent-strong), transparent 24%),
+    linear-gradient(180deg, var(--bg), var(--bg));
+  color: var(--text);
+  transition: background-color 160ms ease, color 160ms ease;
+  -webkit-font-smoothing: antialiased;
 }
 
-:root[data-theme='dark'] {
+body[data-theme='dark'] {
   --bg: #11161c;
   --bg-accent: #172029;
   --bg-accent-strong: #1e2a34;
@@ -50,17 +59,6 @@
   --shadow: 0 20px 52px rgba(2, 6, 23, 0.32);
 }
 
-body {
-  min-height: 100vh;
-  background:
-    radial-gradient(circle at top left, var(--bg-accent), transparent 28%),
-    radial-gradient(circle at top right, var(--bg-accent-strong), transparent 24%),
-    linear-gradient(180deg, var(--bg), var(--bg));
-  color: var(--text);
-  transition: background-color 160ms ease, color 160ms ease;
-  -webkit-font-smoothing: antialiased;
-}
-
 a {
   color: inherit;
 }
@@ -69,11 +67,17 @@ a {
   min-height: 100vh;
 }
 
+.app-shell {
+  min-height: 100vh;
+  background: transparent;
+  color: inherit;
+}
+
 .app-nav {
   background: var(--panel);
   backdrop-filter: blur(18px);
   border-color: var(--border);
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.028);
 }
 
 .surface-card {
@@ -126,7 +130,7 @@ a {
 }
 
 .btn-secondary {
-  background: color-mix(in srgb, var(--panel-strong) 88%, var(--bg-accent-strong));
+  background: color-mix(in srgb, var(--panel-strong) 94%, var(--bg-accent));
   color: var(--text);
   border: 1px solid var(--border);
 }
@@ -359,7 +363,7 @@ a {
 }
 
 .status-pill-neutral {
-  background: color-mix(in srgb, var(--panel-soft) 75%, var(--bg-accent));
+  background: color-mix(in srgb, var(--panel-soft) 86%, var(--bg-accent));
   color: var(--text);
 }
 
@@ -386,7 +390,7 @@ a {
   width: 100%;
   overflow: hidden;
   border-radius: 9999px;
-  background: color-mix(in srgb, var(--panel-soft) 70%, var(--bg-accent));
+  background: color-mix(in srgb, var(--panel-soft) 84%, var(--bg-accent));
 }
 
 .progress-fill {

@@ -157,7 +157,6 @@
           <div>
             <label class="block text-sm font-medium mb-2">Tema</label>
             <select v-model="form.theme_preference" class="field w-full max-w-xs">
-              <option value="system">Prati sistem</option>
               <option value="light">Svetla</option>
               <option value="dark">Tamna</option>
             </select>
@@ -189,7 +188,7 @@ const form = reactive({
   display_name: '',
   reminders_enabled: true,
   reminder_days: 3,
-  theme_preference: 'system',
+  theme_preference: 'light',
   subscription_tier: 'free',
 });
 const profileForm = reactive({

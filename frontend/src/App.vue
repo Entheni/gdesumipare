@@ -1,5 +1,5 @@
 ﻿<template>
-  <div class="min-h-screen">
+  <div class="app-shell min-h-screen">
     <nav class="app-nav border-b">
       <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-4">
         <div class="flex items-center gap-4">
@@ -53,7 +53,7 @@ async function syncThemeFromSettings() {
     const { data } = await api.get('/api/podesavanja');
     setThemePreference(data.settings.theme_preference);
   } catch {
-    // Keep local theme preference when settings fetch fails.
+    setThemePreference('light', { persist: false });
   }
 }
 
